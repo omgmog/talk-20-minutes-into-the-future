@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title></title>
+  <script src="assets/js/lib/marked.js"></script>
+  <script src="assets/js/lib/three.min.js"></script>
+  <script src="assets/js/lib/StereoEffect.js"></script>
+  <script src="assets/js/lib/rainbow/rainbow.min.js"></script>
+  <script src="assets/js/lib/rainbow/generic.js"></script>
+  <script src="assets/js/lib/rainbow/html.js"></script>
+  <script src="assets/js/lib/rainbow/javascript.js"></script>
+  <script src="http://maps.google.com/maps/api/js?sensor=false"></script>
+
+  <link href='https://fonts.googleapis.com/css?family=Ubuntu' rel='stylesheet'>
+  <link rel="stylesheet" type="text/css" href="assets/css/monokai.css">
+  <link rel="stylesheet" type="text/css" href="assets/css/main.css">
+</head>
+<body>
+  <xmp>
+---
+
+<div class="demo backdrop"></div>
+
+### 20 Minutes into the Future with
+## Google Cardboard
+### and JavaScript
+
+---
+
+# Hello
+## I'm Max Glenister
+### @omgmog on the Internet
+
+---
+
+![](assets/img/sushack.png)
+## SusHack
+### 2013 &mdash; 2015
+
+---
+
+![](assets/img/sushack2.jpg)
+#### Pretty cool.
+
+---
+
+![](assets/img/fletchervr.gif)
+## The Future
+### 2015 &mdash; ?
+
+---
+
+### In your pocket is a VR device.
+
+---
+
+![](assets/img/phones.jpg)
+
+---
+
+### Most phones contain a lot of sensors...
+
+---
+
+## Camera
+
+---
+
+## Touch Screen
+
+---
+
+## GPS
+
+---
+
+## WiFi
+
+---
+
+## Microphone
+
+---
+
+## Ambient Light Sensor
+
+---
+
+## Accelerometer
+
+---
+
+## Magnetometer
+
+---
+
+## Gyroscope
+
+---
+
+## NFC
+
+---
+
+## ...
+
+---
+
+![](assets/img/tricorder.png)
+
+---
+
+### How can we use this for VR?
+
+---
+
+![](assets/img/html5js.png)
+
+---
+
+![](assets/img/html5jsno.png)
+
+---
+
+![](assets/img/js.png)
+
+---
+
+- Geolocation
+- Device Orientation
+- Fullscreen
+- WebRTC
+- getUserMedia
+- Web Audio
+- Gamepad
+- WebGL
+
+---
+
+![](assets/img/geolocation.png)
+### Geolocation
+
+---
+
+``` javascript
+navigator.geolocation.getCurrentPosition(function (pos) {
+  console.log(pos.coords.latitude);
+  console.log(pos.coords.longitude);
+});
+```
+
+---
+
+<div class="demo geolocation"></div>
+
+---
+
+![](assets/img/geolocation-prompt.png)
+
+---
+
+![](assets/img/deviceorientation.png)
+### Device Orientation
+
+---
+
+<div class="demo rotationx"></div>
+
+#### Rotation on X-axis
+
+_Pitch_ or _Beta_ (β) range of -180° to 180°
+
+---
+
+<div class="demo rotationy"></div>
+
+#### Rotation on Y-axis
+
+_Roll_ or _Gamma_ (γ) range of -90° to 90°
+
+---
+
+<div class="demo rotationz"></div>
+
+#### Rotation on Z-axis
+
+_Yaw_ or _Alpha_ (α) range of 0° to 360°
+
+---
+
+``` javascript
+window.addEventListener('deviceorientation',
+  function (e) {
+    console.log(e.gamma);
+    console.log(e.beta);
+    console.log(e.alpha);
+  },
+  false
+);
+```
+
+---
+
+![](assets/img/fullscreen.png)
+### Fullscreen
+
+---
+
+![](assets/img/fullscreen-prompt.png)
+
+---
+
+``` javascript
+var button = document.querySelector('button');
+
+button.addEventListener('click',
+  function (e) {
+    document.body.requestFullScreen();
+  }
+);
+```
+
+---
+
+![](assets/img/webrtc.png)
+### WebRTC
+
+---
+
+TODO
+
+---
+
+![](assets/img/getusermedia.gif)
+### getUserMedia
+
+---
+
+TODO
+
+---
+
+![](assets/img/webaudio.png)
+### Web Audio
+
+---
+
+``` javascript
+// Set up the audio context
+var context = new AudioContext();
+// Create an oscillator
+var oscillator = context.createOscillator();
+// Connect the oscillator to our playback device
+oscillator.connect(context.destination);
+// Start the sound output
+oscillator.start();
+```
+
+---
+
+``` javascript
+var context = new AudioContext();
+var file = 'demo.wav';
+var request = new XMLHttpRequest();
+var source;
+request.open('GET', file, true);
+request.responseType = 'arraybuffer';
+request.onload = function () {
+  source = context.createBufferSource();
+  context.decodeAudioData(request.response, function (buffer) {
+    source.buffer = buffer;
+    source.connect(context.destination);
+    source.start(context.currentTime);
+  });
+};
+request.send();
+
+```
+
+---
+
+<div class="demo webaudio"></div>
+
+---
+
+![](assets/img/gamepad.png)
+### Gamepad
+
+---
+
+TODO
+
+---
+
+![](assets/img/webgl.png)
+### WebGL
+
+---
+
+![](assets/img/webglno.png)
+### WebGL
+
+---
+
+![](assets/img/threejs.png)
+### WebGL (with three.js)
+
+---
+
+## This bit is really simple!
+
+---
+
+``` javascript
+// Set it all up...
+var width = 600, height = 300, aspect = width/height;
+var scene = new THREE.Scene();
+var renderer = new THREE.WebGLRenderer({
+  alpha: true, antialias: true, logarithmicDepthBuffer: true
+});
+renderer.setSize( width, height );
+document.body.appendChild(renderer.domElement);
+
+// ... Continued
+```
+
+---
+
+``` javascript
+// Create a cube...
+var cubeGeometry = new THREE.BoxGeometry(10, 10, 10);
+var cubeMaterial = new THREE.MeshBasicMaterial({color: 0x000000});
+var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+scene.add(cube);
+
+// Add some edges...
+var cubeEdges = new THREE.EdgesHelper(cube, 0xff0000);
+cubeEdges.material.linewidth = 5;
+scene.add(cubeEdges);
+
+// ... Continued
+```
+
+---
+
+``` javascript
+// Lights...
+var ambientLight = new THREE.AmbientLight(0xffffff);
+scene.add(ambientLight);
+var pointLight = new THREE.PointLight(0xffffff, 6, 40);
+pointLight.lookAt(cube.position);
+scene.add(pointLight);
+
+// Camera...
+var camera = new T.PerspectiveCamera(35, aspect, 1, 1000);
+camera.position.set(20, 20, 20);
+camera.lookAt(scene.position);
+
+// ... Continued
+```
+
+---
+
+``` javascript
+// Action!
+function render() {
+  cube.rotation.x += 0.04;
+  requestAnimationFrame(render);
+  renderer.render(scene, camera);
+}
+render();
+```
+
+---
+
+<div class="demo r2 bigimage opaque" style="background-image: url(assets/img/r2sleep.gif); background-color: #000;"></div>
+
+---
+
+<div class="bigimage" style="background-image: url(assets/img/starburst.png); background-size: cover; opacity: .2;"></div>
+<div class="demo threejs"></div>
+
+---
+
+### Making it work in 3D
+
+---
+
+``` javascript
+// Include the StereoEffect.js file
+
+// After setting up your renderer
+effect = new THREE.StereoEffect(renderer);
+effect.eyeSeparation = 1; // Set the IPD
+effect.setSize( width, height );
+
+// Instead of calling renderer.render(scene, camera)
+effect.render(scene, camera)
+```
+---
+
+<div class="bigimage" style="background-image: url(assets/img/starburst.png); background-size: cover; opacity: .2;"></div>
+<div class="demo threejs3d"></div>
+
+---
+
+<div class="bigimage" style="background-image: url(assets/img/blipvert.gif); background-color: #010;"></div>
+
+## INFORMATION<br>OVERLOAD
+
+---
+
+![](assets/img/box.png)
+
+
+---
+
+![](assets/img/cardboardforcats.gif)
+
+---
+
+![](assets/img/cardboard.png)
+### Google Cardboard
+
+---
+
+> Google Cardboard is a virtual reality platform [using a] fold-out cardboard mount [and] a mobile phone [to create] a low-cost system to encourage interest and development in VR.
+
+---
+
+![](assets/img/many-cardboards.jpg)
+
+---
+
+![](assets/img/unitsv1v2.png)
+
+---
+
+![](assets/img/cardboard-assembly.gif)
+
+---
+
+TODO: cardboard apps image
+
+---
+
+<div class="bigimage" style="background-image: url(assets/img/letsdothis.gif); background-color: #000;"></div>
+
+## Some demos
+
+---
+
+### Basic VR scene
+
+---
+
+### VR with look interaction
+
+---
+
+### VR with gamepad movement
+
+---
+
+### Using getUserMedia inside VR
+
+---
+
+### 3D audio
+
+---
+
+### These are all available online
+
+## [jscard.xyz](http://jscard.xyz)
+
+---
+
+## Lastly...
+
+---
+
+<div class="bigimage" style="background-image: url(assets/img/end.gif); background-color: #000; background-size: cover;"></div>
+
+### Consider UX
+
+I've made a list of resources...
+
+[github.com/omgmog/ui-ux-vr](https://github.com/omgmog/ui-ux-vr)
+
+---
+
+<div class="bigimage" style="background-image:url(assets/img/tv.gif); background-color: #fff;"></div>
+
+# Thanks
+
+  </xmp>
+
+  <script src="assets/js/core.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/demos.js"></script>
+</body>
+</html>
