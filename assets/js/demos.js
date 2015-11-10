@@ -141,27 +141,56 @@
       }]
     );
     cube.position.y = -10;
+    cube.position.z = 2;
     cube.castShadow = true;
+    cube.receiveShadow = true;
     scene.add(cube);
 
 
     var ambientLight = new T.AmbientLight(
-      0x222222
+      0x222222, 0
     );
     scene.add(ambientLight);
 
-    var dLightBehind = new T.DirectionalLight(0xffffff, 1);
-    dLightBehind.position.set(0, 5, -20);
-    dLightBehind.target = scene;
-    dLightBehind.castShadow = true;
-    scene.add(dLightBehind);
+    var lampx = -1;
+    var lampy = 4;
+    var lampz = -10;
 
+    var bulb = gl.build(
+      'SphereGeometry',
+      [1,20,20],
+      'MeshPhongMaterial',
+      [{
+        color: 0xffff00,
+        shading: T.FlatShading,
+      }]
+    );
+    bulb.position.set(lampx, lampy, lampz);
+    // scene.add(bulb);
 
-    var dLightInfront = new T.DirectionalLight(0xffffff, 0.1);
-    dLightInfront.position.set(0, -15, 20);
-    dLightInfront.target = cube;
-    dLightInfront.castShadow = true;
-    scene.add(dLightInfront);
+    var dlight = new T.SpotLight( 0xffffff, 1 );
+    dlight.color.setHSL( 0.1, 1, 0.95 );
+    dlight.position.set(lampx, lampy, lampz);
+    dlight.position.multiplyScalar( 5 );
+    dlight.castShadow = true;
+
+    // Increase size for sharper shadows
+    dlight.shadowMapWidth = 1024;
+    dlight.shadowMapHeight = 1024;
+
+    var d = 64;
+
+    dlight.shadowCameraLeft = -d;
+    dlight.shadowCameraRight = d;
+    dlight.shadowCameraTop = d;
+    dlight.shadowCameraBottom = -d;
+
+    // dlight.shadowCameraFar = 3500;
+    // dlight.shadowBias = -0.001;
+    dlight.exponent = 1;
+
+    // dlight.shadowCameraVisible = true;
+    scene.add( dlight );
 
     // Create the ground
     var groundTexture = T.ImageUtils.loadTexture('assets/img/desert.jpg');
@@ -171,15 +200,16 @@
 
     var groundMesh = gl.build(
       'PlaneBufferGeometry',
-      [100, 100, 4, 4],
+      [200, 200, 4, 4],
       'MeshBasicMaterial',
       [{
-        color: 0x221b10,
+        color: 0x222222,
         map: groundTexture,
       }]
     );
     groundMesh.rotation.x = -Math.PI / 2;
-    groundMesh.position.y = -20;
+    groundMesh.position.y = -18;
+    groundMesh.receiveShadow = true;
     scene.add(groundMesh);
 
     // Create the sky...
@@ -188,25 +218,25 @@
     skyTexture.wrapT = T.RepeatWrapping;
     var skyMesh = gl.build(
       'PlaneBufferGeometry',
-      [100, 100, 4, 4],
+      [200, 200, 1, 1],
       'MeshLambertMaterial',
       [{
+        color: 0xffffff,
         map: skyTexture,
       }]
     );
-    skyMesh.rotation.X = Math.PI /2;
     skyMesh.position.z = -50;
-    skyMesh.material.transparent = true;
-    skyMesh.material.opacity = 1;
+    skyMesh.position.y = -30;
+    // skyMesh.material.opacity = 1;
     scene.add(skyMesh);
 
     // Camera...
     var minCamY = -10;
     var maxCamY = 15;
-    var maxCamSky = 20;
 
-    var camera = new T.PerspectiveCamera(30, aspect, 1, 1000);
-    camera.position.set(0, 20, 20);
+    var camera = new T.PerspectiveCamera(30, aspect, 1, 10000);
+    camera.position.set(-10, 20, 20);
+
     camera.lookAt(cube.position);
     camera.position.y = minCamY;
 
@@ -215,18 +245,14 @@
 
     // Action!
     function render() {
-      skyMesh.rotation.z += 0.0005;
+      // skyMesh.rotation.z += 0.005;
+      skyMesh.position.y += 0.005;
       if (camera.position.y <= maxCamY) {
         camera.position.y += 0.02;
         camera.position.z += 0.02;
         camera.lookAt(cube.position);
-        dLightInfront.intensity += 0.0005;
-      }
-      if (camera.position.y >= maxCamY && camera.position.y <= maxCamSky) {
-        camera.position.y += 0.02;
-        camera.rotation.x += 0.01;
-        skyMesh.position.y += 0.1 * Math.PI;
-        skyMesh.material.opacity -= 0.005;
+        ambientLight.intensity += 0.02;
+        dlight.intensity += 0.0005;
       }
       requestAnimationFrame(render);
       renderer.render(scene, camera);
