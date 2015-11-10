@@ -10,7 +10,7 @@
   };
 
   // set specific slide active for debug
-  qsa('body > section:nth-child(46)')[0].classList.add('active');
+  // qsa('body > section:nth-child(46)')[0].classList.add('active');
 
   var hasClass = function (element, className) {
     do {
