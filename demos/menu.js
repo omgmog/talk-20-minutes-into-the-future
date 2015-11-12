@@ -72,13 +72,14 @@ var menu = (function (window, document) {
   var createCard = function (cardData) {
     var card;
     var texture = T.ImageUtils.loadTexture(cardData.image);
-    texture.wrapS = T.RepeatWrapping;
-    texture.wrapT = T.RepeatWrapping;
+    texture.wrapS = T.ClampToEdgeWrapping;
+    texture.wrapT = T.ClampToEdgeWrapping;
     texture.repeat.set( 1, 1 );
+    texture.minFilter = T.LinearFilter;
 
     card = gl.build(
       'PlaneBufferGeometry',
-      [4, 3, 1, 1],
+      [4, 3, 2, 2],
       'MeshLambertMaterial',
       [{
         color: 0xffffff,
