@@ -124,6 +124,7 @@ var menu = (function (window, document) {
     renderer.setSize(width, height);
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.soft = true;
+    renderer.setPixelRatio( window.devicePixelRatio );
     center = new T.Vector3(0,1,0);
 
 
@@ -180,10 +181,10 @@ var menu = (function (window, document) {
   };
 
   var displayMenu = function () {
-    demos.forEach(function (demo, i) {
+    demos.forEach(function (demo) {
       createCard(demo);
     });
-    cards.forEach(function (card, i) {
+    cards.forEach(function (card) {
       scene.add(card);
       card.receiveShadow = true;
       card.castShadow = true;
@@ -208,7 +209,7 @@ var menu = (function (window, document) {
   };
 
   var buildAxes = function () {
-    var axes = new THREE.Object3D();
+    var axes = new T.Object3D();
 
     axes.add( buildAxis( new T.Vector3( 0, 0, 0 ), new T.Vector3( 100, 0, 0 ), 0xFF0000, false ) ); // +X
     axes.add( buildAxis( new T.Vector3( 0, 0, 0 ), new T.Vector3( -100, 0, 0 ), 0x800000, true) ); // -X
