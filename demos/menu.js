@@ -143,13 +143,10 @@ var menu = (function (window, document) {
     controls.enableZoom = false;
     controls.enablePan = false;
 
-    var deviceOrientationEvent = function () {
+    if (typeof window.orientation !== 'undefined') {
       camera.position.y = 4;
       controls = new T.DeviceOrientationControls(camera, true);
-      window.removeEventListener('deviceorientation', deviceOrientationEvent, false);
-    };
-
-    window.addEventListener('deviceorientation', deviceOrientationEvent, false);
+    }
 
     document.body.appendChild(renderer.domElement);
     console.log('Three setup');
