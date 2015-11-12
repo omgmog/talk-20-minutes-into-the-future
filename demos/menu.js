@@ -3,10 +3,50 @@ var menu = (function (window, document) {
 
   // Three vars
   var T = window.THREE;
-  var renderer, scene, camera, controls, center, width, height, aspect, fov, spotlight;
+  var gl = window.gl;
+  var console = window.console;
+
+
+  var renderer, effect, scene, camera, controls, center, width, height, aspect, fov, spotlight;
 
 
   var demos = [
+    {
+      title: 'Basic VR',
+      color: 0xff0000,
+      image: 'image1.png',
+      url: 'basic_vr'
+    },
+    {
+      title: 'Basic VR',
+      color: 0xff0000,
+      image: 'image1.png',
+      url: 'basic_vr'
+    },
+    {
+      title: 'Basic VR',
+      color: 0xff0000,
+      image: 'image1.png',
+      url: 'basic_vr'
+    },
+    {
+      title: 'Basic VR',
+      color: 0xff0000,
+      image: 'image1.png',
+      url: 'basic_vr'
+    },
+    {
+      title: 'Basic VR',
+      color: 0xff0000,
+      image: 'image1.png',
+      url: 'basic_vr'
+    },
+    {
+      title: 'Basic VR',
+      color: 0xff0000,
+      image: 'image1.png',
+      url: 'basic_vr'
+    },
     {
       title: 'Basic VR',
       color: 0xff0000,
@@ -28,7 +68,6 @@ var menu = (function (window, document) {
   ];
 
   var cards = [];
-  var hits = [];
 
   var createCard = function (cardData) {
     var card;
@@ -62,8 +101,8 @@ var menu = (function (window, document) {
 
     cards.forEach(function (card, i) {
       cards[i].position.y = 0;
-      cards[i].position.x = Math.round(radius * (Math.cos(theta[i])));
-      cards[i].position.z = Math.round(radius * (Math.sin(theta[i])));
+      cards[i].position.x = radius * (Math.cos(theta[i]));
+      cards[i].position.z = radius * (Math.sin(theta[i]));
       cards[i].lookAt(center);
     });
 
@@ -86,22 +125,36 @@ var menu = (function (window, document) {
     renderer.shadowMap.soft = true;
     center = new T.Vector3(0,1,0);
 
+
+    effect = new T.StereoEffect(renderer);
+    effect.eyeSeparation = 1;
+    effect.setSize( width, height );
+
     camera = new T.PerspectiveCamera(fov, aspect, 0.1, 10000);
     camera.position.set(0, 10, 0);
     scene.add(camera);
 
-    controls = new THREE.OrbitControls( camera, renderer.domElement );
+
+    controls = new T.OrbitControls( camera, renderer.domElement );
     controls.enableDamping = true;
     controls.dampingFactor = 0.25;
     controls.enableZoom = false;
     controls.enablePan = false;
+
+    var deviceOrientationEvent = function () {
+      camera.position.y = 4;
+      controls = new T.DeviceOrientationControls(camera, true);
+      window.removeEventListener('deviceorientation', deviceOrientationEvent, false);
+    };
+
+    window.addEventListener('deviceorientation', deviceOrientationEvent, false);
 
     document.body.appendChild(renderer.domElement);
     console.log('Three setup');
   };
 
   var render = function () {
-    renderer.render(scene, camera);
+    effect.render(scene, camera);
     requestAnimationFrame(render);
     controls.update();
   };
@@ -153,113 +206,61 @@ var menu = (function (window, document) {
     console.log('Menu displayed');
   };
 
-  var setupInteraction = function () {
-
-    renderer.domElement.addEventListener('mousedown', function (e){
-      var pointx = (e.pageX - this.offsetLeft) / this.width * 2 - 1;
-      var pointy = (e.pageY - this.offsetTop) / this.height * 2 - 1;
-      var pointz = 0.5;
-      console.log(pointx, pointy);
-
-      var vector = new T.Vector3(
-        pointx,
-        pointy,
-        pointz
-      );
-      vector.unproject(camera);
-
-      var hit = gl.build(
-        'BoxGeometry',
-        [1,1,1],
-        'MeshPhongMaterial',
-        [{
-          color: 0x0000dd,
-          specular: 0xffffff,
-          shininess: 30,
-          shading: T.FlatShading,
-          transparent: true,
-          opacity: 0.2
-        }]
-      );
-      hit.position.set(
-        pointx,
-        pointy,
-        pointz
-      );
-      scene.add(hit);
-      hits.push(hit);
-
-      var raycaster = new T.Raycaster(
-        camera.position,
-        vector.sub(camera.position).normalize()
-      );
-      var intersects = raycaster.intersectObjects(cards);
-
-      if (intersects.length > 0) {
-        intersects[0].object.material.transparent = true;
-        if (intersects[0].object.material.opacity === 0.5) {
-          intersects[0].object.material.opacity = 1;
-        } else {
-          intersects[0].object.material.opacity = 0.5;
-        }
-
-        var points = [];
-        points.push(new T.Vector3(camera.position.x,camera.position.y - 0.2, camera.position.z));
-        points.push(intersects[0].point);
-
-        var tube = gl.build(
-          'TubeGeometry',
-          [new T.CatmullRomCurve3(points), 60, 0.001],
-          'MeshBasicMaterial',
-          [{
-            color: 0xff0000,
-          }]
-        );
-        scene.add(tube);
-      }
-
-
-    }, false);
-  };
-
   var buildAxes = function () {
     var axes = new THREE.Object3D();
 
-    axes.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 100, 0, 0 ), 0xFF0000, false ) ); // +X
-    axes.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( -100, 0, 0 ), 0x800000, true) ); // -X
-    axes.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, 100, 0 ), 0x00FF00, false ) ); // +Y
-    axes.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, -100, 0 ), 0x008000, true ) ); // -Y
-    axes.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, 0, 100 ), 0x0000FF, false ) ); // +Z
-    axes.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, 0, -100 ), 0x000080, true ) ); // -Z
+    axes.add( buildAxis( new T.Vector3( 0, 0, 0 ), new T.Vector3( 100, 0, 0 ), 0xFF0000, false ) ); // +X
+    axes.add( buildAxis( new T.Vector3( 0, 0, 0 ), new T.Vector3( -100, 0, 0 ), 0x800000, true) ); // -X
+    axes.add( buildAxis( new T.Vector3( 0, 0, 0 ), new T.Vector3( 0, 100, 0 ), 0x00FF00, false ) ); // +Y
+    axes.add( buildAxis( new T.Vector3( 0, 0, 0 ), new T.Vector3( 0, -100, 0 ), 0x008000, true ) ); // -Y
+    axes.add( buildAxis( new T.Vector3( 0, 0, 0 ), new T.Vector3( 0, 0, 100 ), 0x0000FF, false ) ); // +Z
+    axes.add( buildAxis( new T.Vector3( 0, 0, 0 ), new T.Vector3( 0, 0, -100 ), 0x000080, true ) ); // -Z
 
     scene.add( axes );
 
   };
   function buildAxis( src, dst, colorHex, dashed ) {
-    var geom = new THREE.Geometry(),
+    var geom = new T.Geometry(),
       mat;
 
     if(dashed) {
-      mat = new THREE.LineDashedMaterial({ linewidth: 1, color: colorHex, dashSize: 5, gapSize: 5 });
+      mat = new T.LineDashedMaterial({ linewidth: 1, color: colorHex, dashSize: 5, gapSize: 5 });
     } else {
-      mat = new THREE.LineBasicMaterial({ linewidth: 1, color: colorHex });
+      mat = new T.LineBasicMaterial({ linewidth: 1, color: colorHex });
     }
 
     geom.vertices.push( src.clone() );
     geom.vertices.push( dst.clone() );
 
-    var axis = new THREE.Line( geom, mat );
+    var axis = new T.Line( geom, mat );
 
     return axis;
 
   }
+  var fullScreen = function () {
+    document.querySelector('button').addEventListener('click', function () {
+      document.body.webkitRequestFullScreen();
+    }, false);
+  };
+  var screenResize = function () {
+
+    window.onresize = function () {
+      var w = window.innerWidth;
+      var h = window.innerHeight;
+      camera.aspect = w/h;
+      renderer.setSize(w, h);
+      effect.setSize(w, h);
+      effect.render(scene, camera);
+    };
+  };
 
   var init = function () {
     setupThree();
     displayMenu();
-    // setupInteraction();
     buildAxes();
     render();
+    fullScreen();
+    screenResize();
   };
 
   return {
