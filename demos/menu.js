@@ -10,6 +10,29 @@ var menu = (function (window, document) {
 
   var renderer, effect, scene, camera, controls, center, width, height, aspect, fov, spotlight;
 
+  var scalingFactor = .8;
+  var lookTargets = [
+    {
+      x: -10 * scalingFactor,
+      z: -4 * scalingFactor
+    },
+    {
+      x: -9 * scalingFactor,
+      z: 6.5 * scalingFactor
+    },
+    {
+      x: 0 * scalingFactor,
+      z: 11 * scalingFactor
+    },
+    {
+      x: 9 * scalingFactor,
+      z: 6.5 * scalingFactor
+    },
+    {
+      x: 10 * scalingFactor,
+      z: -4 * scalingFactor
+    }
+  ];
 
   var demos = [
     {
@@ -19,52 +42,28 @@ var menu = (function (window, document) {
       url: 'basic_vr'
     },
     {
-      title: 'Basic VR',
-      color: 0xff0000,
+      title: 'Look Interaction',
+      color: 0x00ff00,
       image: 'image1.png',
-      url: 'basic_vr'
+      url: 'look_interaction'
     },
     {
-      title: 'Basic VR',
-      color: 0xff0000,
+      title: 'Gamepad Interaction',
+      color: 0x0000ff,
       image: 'image1.png',
-      url: 'basic_vr'
+      url: 'gamepad_interaction'
     },
     {
-      title: 'Basic VR',
-      color: 0xff0000,
+      title: 'getUserMedia',
+      color: 0xff00ff,
       image: 'image1.png',
-      url: 'basic_vr'
+      url: 'getusermedia'
     },
     {
-      title: 'Basic VR',
-      color: 0xff0000,
+      title: 'Spacial Audio',
+      color: 0xffff00,
       image: 'image1.png',
-      url: 'basic_vr'
-    },
-    {
-      title: 'Basic VR',
-      color: 0xff0000,
-      image: 'image1.png',
-      url: 'basic_vr'
-    },
-    {
-      title: 'Basic VR',
-      color: 0xff0000,
-      image: 'image1.png',
-      url: 'basic_vr'
-    },
-    {
-      title: 'Basic VR',
-      color: 0xff0000,
-      image: 'image1.png',
-      url: 'basic_vr'
-    },
-    {
-      title: 'Basic VR',
-      color: 0xff0000,
-      image: 'image1.png',
-      url: 'basic_vr'
+      url: 'spacial_audio'
     }
   ];
 
@@ -78,44 +77,39 @@ var menu = (function (window, document) {
     texture.repeat.set( 1, 1 );
     texture.minFilter = T.LinearFilter;
 
+    var scalingFactor = 0.8;
+    var unit = 8;
+    var ratio = (1/4)*3;
+    var width = unit * scalingFactor;
+    var height = unit * ratio * scalingFactor;
     card = gl.build(
       'PlaneBufferGeometry',
-      [4, 3, 2, 2],
+      [width, height, 2, 2],
       'MeshLambertMaterial',
       [{
-        color: 0xffffff,
+        color: cardData.color,
         map: texture
       }]
     );
+    card.url = cardData.url;
 
     cards.push(card);
   };
 
   var positionCards = function (cards) {
-    var theta = [];
-    var totalCards = cards.length;
-    var segments = -180 / totalCards;
-    var radius = 10;
-
-    for (var i = 0; i < totalCards; i++) {
-      theta.push((segments / 150) * i * Math.PI);
-    }
-
     cards.forEach(function (card, i) {
-      cards[i].position.y = 0;
-      cards[i].position.x = radius * (Math.cos(theta[i]));
-      cards[i].position.z = radius * (Math.sin(theta[i]));
-      cards[i].lookAt(center);
+      var target = lookTargets[i];
+      card.position.x = target.x;
+      card.position.z = target.z;
+      card.lookAt(center);
     });
-
-    console.log('Cards positioned');
   };
 
   var setupThree = function () {
     height = window.innerHeight;
     width = window.innerWidth;
     aspect = width / height;
-    fov = 30;
+    fov = 90;
     scene = new T.Scene();
     renderer = new T.WebGLRenderer({
       alpha: true,
@@ -135,8 +129,8 @@ var menu = (function (window, document) {
 
     camera = new T.PerspectiveCamera(fov, aspect, 0.1, 10000);
     camera.position.set(0, 10, 0);
-    scene.add(camera);
 
+    scene.add(camera);
 
     controls = core.controllerMethod(controls, camera, renderer.domElement);
 
@@ -148,10 +142,34 @@ var menu = (function (window, document) {
     console.log('Three setup');
   };
 
+  var viewedItem = null;
+  var previousViewedItem = null;
+  var getViewedItem = function () {
+    var raycaster = new T.Raycaster();
+    raycaster.setFromCamera(new T.Vector3(0,0,0), camera);
+
+    cards.forEach(function (card, i) {
+      var intersects = raycaster.intersectObject(card);
+
+      if (intersects.length) {
+        card = intersects[0].object;
+        viewedItem = card;
+        card.material.color.setHex(0xffffff);
+        card.material.transparent = true;
+        card.material.opacity = 0.5;
+      }else{
+        card.material.color.setHex(demos[i].color);
+        card.material.transparent = false;
+        card.material.opacity = 1;
+      }
+    });
+    console.log(viewedItem);
+  };
   var render = function () {
     effect.render(scene, camera);
     requestAnimationFrame(render);
     controls.update();
+    getViewedItem();
   };
 
   var lightScene = function () {
@@ -197,8 +215,6 @@ var menu = (function (window, document) {
     ground.rotation.x = -Math.PI / 2;
     ground.position.z = -1;
     ground.receiveShadow = true;
-
-    console.log('Menu displayed');
   };
 
   var buildAxes = function () {
@@ -243,6 +259,7 @@ var menu = (function (window, document) {
       var w = window.innerWidth;
       var h = window.innerHeight;
       camera.aspect = w/h;
+      camera.updateProjectionMatrix();
       renderer.setSize(w, h);
       effect.setSize(w, h);
       effect.render(scene, camera);
@@ -253,6 +270,7 @@ var menu = (function (window, document) {
     setupThree();
     displayMenu();
     buildAxes();
+    getViewedItem();
     render();
     fullScreen();
     screenResize();
