@@ -42,6 +42,10 @@
     // Assuming this is only available on mobile
     return (typeof window.orientation !== 'undefined');
   };
+  if (isPocketDevice()) {
+    document.body.classList.add('throwable');
+  }
+
   console.log('Device orientation:', isPocketDevice());
 
   var setControllerMethod = function (camera, domElement) {
@@ -275,6 +279,10 @@
     window.addEventListener('resize', resizeRenderer, false);
     window.addEventListener('onviewedtarget', onViewedTargetDebounced, false);
     document.body.appendChild(renderer.domElement);
+
+    document.querySelector('button').addEventListener('click', function () {
+      document.body.webkitRequestFullScreen();
+    }, false);
   };
 
   // START
