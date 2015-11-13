@@ -1,6 +1,7 @@
 var demo = (function (window, document) {
   'use strict';
   var gl = window.gl;
+  var core = window.core;
   var T = window.THREE;
 
   var renderer, scene, camera, effect, controls,
@@ -15,7 +16,6 @@ var demo = (function (window, document) {
   var init = function () {
     scene = new T.Scene();
     camera = new T.PerspectiveCamera(fov, width/height, 1, 1000);
-    controls = new T.DeviceOrientationControls(camera, true);
 
     renderer = new T.WebGLRenderer({
       alpha: true,
@@ -26,6 +26,7 @@ var demo = (function (window, document) {
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.soft = true;
     el.appendChild(renderer.domElement);
+    controls = core.controllerMethod(controls, camera, renderer.domElement);
 
     effect = new T.StereoEffect(renderer);
     effect.eyeSeparation = 1;

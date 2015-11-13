@@ -4,6 +4,7 @@ var menu = (function (window, document) {
   // Three vars
   var T = window.THREE;
   var gl = window.gl;
+  var core = window.core;
   var console = window.console;
 
 
@@ -137,15 +138,10 @@ var menu = (function (window, document) {
     scene.add(camera);
 
 
-    controls = new T.OrbitControls( camera, renderer.domElement );
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.25;
-    controls.enableZoom = false;
-    controls.enablePan = false;
+    controls = core.controllerMethod(controls, camera, renderer.domElement);
 
-    if (typeof window.orientation !== 'undefined') {
+    if (core.isThrowable()) {
       camera.position.y = 4;
-      controls = new T.DeviceOrientationControls(camera, true);
     }
 
     document.body.appendChild(renderer.domElement);
