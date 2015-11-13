@@ -1,284 +1,282 @@
-var menu = (function (window, document) {
+(function (window) {
   'use strict';
-
-  // Three vars
+  // IMPORTS
   var T = window.THREE;
-  var gl = window.gl;
-  var core = window.core;
   var console = window.console;
 
+  // UTILITIES
+  var scale = 0.8;
+  var scaledUnit = function (unit) {
+    return unit * scale;
+  };
 
-  var renderer, effect, scene, camera, controls, center, width, height, aspect, fov, spotlight;
+  var construct = function (constructor, args) {
+    var F = function () {
+      return constructor.apply(this, args);
+    };
+    F.prototype = constructor.prototype;
+    return new F();
+  };
 
-  var scalingFactor = .8;
-  var lookTargets = [
-    {
-      x: -10 * scalingFactor,
-      z: -4 * scalingFactor
-    },
-    {
-      x: -9 * scalingFactor,
-      z: 6.5 * scalingFactor
-    },
-    {
-      x: 0 * scalingFactor,
-      z: 11 * scalingFactor
-    },
-    {
-      x: 9 * scalingFactor,
-      z: 6.5 * scalingFactor
-    },
-    {
-      x: 10 * scalingFactor,
-      z: -4 * scalingFactor
+  var throttle = function (fn, threshhold, scope) {
+    threshhold || (threshhold = 250);
+    var last, deferTimer;
+    return function () {
+      var context = scope || this;
+      var now = +new Date,
+          args = arguments;
+      if (last && now < last + threshhold) {
+        clearTimeout(deferTimer);
+        deferTimer = setTimeout(function () {
+          last = now;
+          fn.apply(context, args);
+        }, threshhold);
+      } else {
+        last = now;
+        fn.apply(context, args);
+      }
+    };
+  };
+
+  var isPocketDevice = function () {
+    // Assuming this is only available on mobile
+    return (typeof window.orientation !== 'undefined');
+  };
+  console.log('Device orientation:', isPocketDevice());
+
+  var setControllerMethod = function (camera, domElement) {
+    var controls;
+    if (isPocketDevice()) {
+      controls = new T.DeviceOrientationControls(camera, true);
+    } else {
+      controls = new T.OrbitControls(camera, domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.25;
+      controls.enableZoom = false;
+      controls.enablePan = false;
     }
-  ];
+    return controls;
+  };
+  var setCameraOptions = function () {
+    var camera;
+    camera = new T.PerspectiveCamera(fov, aspect, near, far);
+    if (isPocketDevice()) {
+      camera.position.y = 4;
+    } else {
+      camera.position.y = 10;
+    }
+    camera.lookAt(center);
+    return camera;
+  };
 
-  var demos = [
+  var center = new T.Vector3(0,0,0);
+  var width = window.innerWidth;
+  var height = window.innerHeight;
+  var aspect = width / height;
+  var fov = 40;
+  var near = 0.1;
+  var far = 10000;
+  var renderer = new T.WebGLRenderer({
+    alpha: true,
+    antialias: true,
+    logarithmicDepthBuffer: true,
+  });
+  renderer.setPixelRatio(window.devicePixelRatio||1);
+  renderer.setSize(width, height);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.soft = true;
+  var effect = new T.StereoEffect(renderer);
+  effect.eyeSeparation = 1;
+  effect.setSize(width, height);
+  var scene = new T.Scene();
+  var camera = setCameraOptions();
+  var controls = setControllerMethod(camera, renderer.domElement);
+  var Tobjects = [];
+
+  var data = [
     {
       title: 'Basic VR',
-      color: 0xff0000,
       image: 'image1.png',
-      url: 'basic_vr'
+      id: 'basic_vr',
+      position: {
+        x: scaledUnit(-10),
+        z: scaledUnit(-4),
+      }
     },
     {
       title: 'Look Interaction',
-      color: 0x00ff00,
-      image: 'image1.png',
-      url: 'look_interaction'
+      image: 'image2.jpeg',
+      id: 'look_interaction',
+      position: {
+        x: scaledUnit(-9),
+        z: scaledUnit(6.5),
+      }
     },
     {
       title: 'Gamepad Interaction',
-      color: 0x0000ff,
-      image: 'image1.png',
-      url: 'gamepad_interaction'
+      image: 'image3.jpeg',
+      id: 'gamepad_interaction',
+      position: {
+        x: scaledUnit(0),
+        z: scaledUnit(11),
+      }
     },
     {
-      title: 'getUserMedia',
-      color: 0xff00ff,
-      image: 'image1.png',
-      url: 'getusermedia'
+      title: 'Using getUserMedia',
+      image: 'image4.jpeg',
+      id: 'getusermedia',
+      position: {
+        x: scaledUnit(9),
+        z: scaledUnit(6.5),
+      }
     },
     {
       title: 'Spacial Audio',
-      color: 0xffff00,
-      image: 'image1.png',
-      url: 'spacial_audio'
+      image: 'image5.jpeg',
+      id: 'spacial_audio',
+      position: {
+        x: scaledUnit(10),
+        z: scaledUnit(-4),
+      }
     }
   ];
-
-  var cards = [];
-
-  var createCard = function (cardData) {
-    var card;
-    var texture = T.ImageUtils.loadTexture(cardData.image);
-    texture.wrapS = T.ClampToEdgeWrapping;
-    texture.wrapT = T.ClampToEdgeWrapping;
-    texture.repeat.set( 1, 1 );
-    texture.minFilter = T.LinearFilter;
-
-    var scalingFactor = 0.8;
-    var unit = 8;
-    var ratio = (1/4)*3;
-    var width = unit * scalingFactor;
-    var height = unit * ratio * scalingFactor;
-    card = gl.build(
-      'PlaneBufferGeometry',
-      [width, height, 2, 2],
-      'MeshLambertMaterial',
-      [{
-        color: cardData.color,
-        map: texture
-      }]
-    );
-    card.url = cardData.url;
-
-    cards.push(card);
+  var createPlane = function (geometryOptions, materialOptions) {
+    var geometry = construct(T.PlaneBufferGeometry, geometryOptions);
+    var material = construct(T.MeshLambertMaterial, materialOptions);
+    return new T.Mesh(geometry, material);
   };
+  var handleCardLook = function (card) {
+    // Let's do some magic for the card look here
+    console.log("I'm the card for " + card.demoid);
+    card.material.transparent = false;
 
-  var positionCards = function (cards) {
-    cards.forEach(function (card, i) {
-      var target = lookTargets[i];
-      card.position.x = target.x;
-      card.position.z = target.z;
-      card.lookAt(center);
-    });
+    setTimeout(function () {
+      card.material.transparent = true;
+    }, 1000);
   };
-
-  var setupThree = function () {
-    height = window.innerHeight;
-    width = window.innerWidth;
-    aspect = width / height;
-    fov = 90;
-    scene = new T.Scene();
-    renderer = new T.WebGLRenderer({
-      alpha: true,
-      antialias: true,
-      logarithmicDepthBuffer: true,
-    });
-    renderer.setSize(width, height);
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.soft = true;
-    renderer.setPixelRatio( window.devicePixelRatio );
-    center = new T.Vector3(0,1,0);
-
-
-    effect = new T.StereoEffect(renderer);
-    effect.eyeSeparation = 1;
-    effect.setSize( width, height );
-
-    camera = new T.PerspectiveCamera(fov, aspect, 0.1, 10000);
-    camera.position.set(0, 10, 0);
-
-    scene.add(camera);
-
-    controls = core.controllerMethod(controls, camera, renderer.domElement);
-
-    if (core.isThrowable()) {
-      camera.position.y = 4;
-    }
-
-    document.body.appendChild(renderer.domElement);
-    console.log('Three setup');
-  };
-
-  var viewedItem = null;
-  var previousViewedItem = null;
-  var getViewedItem = function () {
-    var raycaster = new T.Raycaster();
-    raycaster.setFromCamera(new T.Vector3(0,0,0), camera);
-
-    cards.forEach(function (card, i) {
-      var intersects = raycaster.intersectObject(card);
-
-      if (intersects.length) {
-        card = intersects[0].object;
-        viewedItem = card;
-        card.material.color.setHex(0xffffff);
-        card.material.transparent = true;
-        card.material.opacity = 0.5;
-      }else{
-        card.material.color.setHex(demos[i].color);
-        card.material.transparent = false;
-        card.material.opacity = 1;
+  var createDemoCards = function () {
+    data.forEach(function (item, i) {
+      var texture;
+      if (item.image) {
+        texture = new T.ImageUtils.loadTexture(item.image);
+        texture.wrapS = texture.wrapT = T.ClampToEdgeWrapping;
+        texture.repeat.set(1,1);
+        texture.minFilter = T.LinearFilter;
       }
+      var card = createPlane(
+        [7, 5.25, 1, 1],
+        [{
+          map: texture
+        }]
+      );
+      card.material.transparent = true;
+      card.material.opacity = 0.5;
+      card.position.x = item.position.x;
+      card.position.z = item.position.z;
+      card.lookAt(center);
+
+      // Extra info
+      card.demoid = item.id;
+      card.viewid = "card-" + i;
+      card.callback = function () {
+        throttle(handleCardLook(card), 250);
+      };
+
+      Tobjects.push(card);
+      scene.add(card);
     });
-    console.log(viewedItem);
   };
-  var render = function () {
-    effect.render(scene, camera);
-    requestAnimationFrame(render);
-    controls.update();
-    getViewedItem();
+  var createGround = function () {
+    var ground = createPlane([200, 200, 4, 4], [{ color: 0x555555 }]);
+    ground.position.set(0, -10, -1);
+    ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true;
+    scene.add(ground);
   };
+  var createLights = function () {
+    var ambientlight = new T.AmbientLight(0xffffff, 1);
+    scene.add(ambientlight);
 
-  var lightScene = function () {
-    var ambientLight = new T.AmbientLight(0xffffff, 1);
-    scene.add(ambientLight);
-
-    spotlight = new T.SpotLight(0xffffff, 0.5);
+    var spotlight = new T.SpotLight(0xffffff, 0.5);
     spotlight.position.set(0, 100, 0);
     spotlight.castShadow = true;
-
     spotlight.shadowMapWidth = 1024;
     spotlight.shadowMapHeight = 1024;
-
     spotlight.shadowCameraNear = 500;
     spotlight.shadowCameraFar = 4000;
     spotlight.shadowCameraFov = 30;
     scene.add(spotlight);
-
-    console.log('Scene lit');
   };
 
-  var displayMenu = function () {
-    demos.forEach(function (demo) {
-      createCard(demo);
+  var onViewedTarget = function (target) {
+    var evt = new CustomEvent('onviewedtarget', { detail: target});
+    window.dispatchEvent(evt);
+  };
+
+  var onViewedTargetDebounced = throttle(function (e) {
+    e.detail.callback(e.target);
+  }, 250);
+
+  var lastViewedThing = null;
+  var checkIfViewingSomething = function (items) {
+    setTimeout(function () {
+      var raycaster = new T.Raycaster();
+      raycaster.setFromCamera(center, camera);
+
+      items.forEach(function (item, i) {
+        var intersects = raycaster.intersectObject(item);
+        if (intersects.length) {
+          if (lastViewedThing !== item.viewid) {
+            lastViewedThing = item.viewid;
+            item = intersects[0].object;
+            setTimeout(function () {
+              onViewedTarget(item);
+            }, 250);
+          }
+        }
+      });
+
+    }, 1000);
+  };
+
+  var buildScene = function () {
+    createGround();
+    createDemoCards();
+    createLights();
+    Tobjects.forEach(function (obj) {
+      console.log(obj );
     });
-    cards.forEach(function (card) {
-      scene.add(card);
-      card.receiveShadow = true;
-      card.castShadow = true;
-    });
-    positionCards(cards);
-    lightScene();
-    var ground = gl.build(
-      'PlaneBufferGeometry',
-      [200, 200, 4, 4],
-      'MeshLambertMaterial',
-      [{
-        color: 0x777777
-      }]
-    );
-    scene.add(ground);
-    ground.position.y = -10;
-    ground.rotation.x = -Math.PI / 2;
-    ground.position.z = -1;
-    ground.receiveShadow = true;
+    scene.add(camera);
+    animateRenderer();
   };
 
-  var buildAxes = function () {
-    var axes = new T.Object3D();
 
-    axes.add( buildAxis( new T.Vector3( 0, 0, 0 ), new T.Vector3( 100, 0, 0 ), 0xFF0000, false ) ); // +X
-    axes.add( buildAxis( new T.Vector3( 0, 0, 0 ), new T.Vector3( -100, 0, 0 ), 0x800000, true) ); // -X
-    axes.add( buildAxis( new T.Vector3( 0, 0, 0 ), new T.Vector3( 0, 100, 0 ), 0x00FF00, false ) ); // +Y
-    axes.add( buildAxis( new T.Vector3( 0, 0, 0 ), new T.Vector3( 0, -100, 0 ), 0x008000, true ) ); // -Y
-    axes.add( buildAxis( new T.Vector3( 0, 0, 0 ), new T.Vector3( 0, 0, 100 ), 0x0000FF, false ) ); // +Z
-    axes.add( buildAxis( new T.Vector3( 0, 0, 0 ), new T.Vector3( 0, 0, -100 ), 0x000080, true ) ); // -Z
-
-    scene.add( axes );
-
-  };
-  function buildAxis( src, dst, colorHex, dashed ) {
-    var geom = new T.Geometry(),
-      mat;
-
-    if(dashed) {
-      mat = new T.LineDashedMaterial({ linewidth: 1, color: colorHex, dashSize: 5, gapSize: 5 });
-    } else {
-      mat = new T.LineBasicMaterial({ linewidth: 1, color: colorHex });
-    }
-
-    geom.vertices.push( src.clone() );
-    geom.vertices.push( dst.clone() );
-
-    var axis = new T.Line( geom, mat );
-
-    return axis;
-
-  }
-  var fullScreen = function () {
-    document.querySelector('button').addEventListener('click', function () {
-      document.body.webkitRequestFullScreen();
-    }, false);
-  };
-  var screenResize = function () {
-
-    window.onresize = function () {
-      var w = window.innerWidth;
-      var h = window.innerHeight;
-      camera.aspect = w/h;
-      camera.updateProjectionMatrix();
-      renderer.setSize(w, h);
-      effect.setSize(w, h);
-      effect.render(scene, camera);
-    };
+  var animateRenderer = function () {
+    effect.render(scene, camera);
+    controls.update();
+    requestAnimationFrame(animateRenderer);
+    checkIfViewingSomething(Tobjects);
   };
 
+  var resizeRenderer = function () {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    aspect = width / height;
+
+    camera.aspect = aspect;
+    camera.updateProjectionMatrix();
+    renderer.setSize(width, height);
+    effect.setSize(width, height);
+    effect.render(scene, camera);
+
+  };
   var init = function () {
-    setupThree();
-    displayMenu();
-    buildAxes();
-    getViewedItem();
-    render();
-    fullScreen();
-    screenResize();
+    buildScene();
+    window.addEventListener('resize', resizeRenderer, false);
+    window.addEventListener('onviewedtarget', onViewedTargetDebounced, false);
+    document.body.appendChild(renderer.domElement);
   };
 
-  return {
-    init: init
-  };
-}(window, document));
-
-menu.init();
+  // START
+  init();
+}(window));
