@@ -55,12 +55,67 @@ var core = (function (window) {
     }
     return controls;
   };
+  var resizeRenderer = function (renderer, scene, camera, effect) {
+    var width = window.innerWidth;
+    var height = window.innerHeight;
+    var aspect = width / height;
+
+    camera.aspect = aspect;
+    camera.updateProjectionMatrix();
+    renderer.setSize(width, height);
+    effect.setSize(width, height);
+    effect.render(scene, camera);
+  };
+
+  var setCameraOptions = function () {
+    var camera;
+    camera = new T.PerspectiveCamera(core.options.fov, core.options.aspect, core.options.near, core.options.far);
+    if (core.isPocketDevice()) {
+      camera.position.y = 4;
+    } else {
+      camera.position.y = 10;
+    }
+    var radius = 0.125;
+    var segments = 32;
+    var material = new T.LineBasicMaterial(
+      {
+        color: 0x111111,
+        linewidth: 5,
+        transparent: true,
+        opacity: 0.8
+      }
+    );
+    var geometry = new T.CircleGeometry( radius, segments );
+    geometry.vertices.shift();
+    var circle = new T.Line( geometry, material ) ;
+    circle.position.z = -10;
+    camera.add(circle);
+
+    return camera;
+  };
+
+  var options = {
+    fov: 40,
+    width: window.innerWidth,
+    height: window.innerHeight,
+    aspect: 1,
+    near: 0.1,
+    far: 1000,
+  };
+  // Override some options based on context
+  options.aspect = options.width / options.height;
+  if (isPocketDevice()) {
+    options.fov = 90;
+  }
 
   return {
+    options: options,
     construct: construct,
     build: build,
     throttle: throttle,
     isPocketDevice: isPocketDevice,
-    setControllerMethod: setControllerMethod
+    setControllerMethod: setControllerMethod,
+    resizeRenderer: resizeRenderer,
+    setCameraOptions: setCameraOptions
   };
 }(window));

@@ -12,59 +12,27 @@
   if (core.isPocketDevice()) {
     document.body.classList.add('throwable');
   }
-  var setCameraOptions = function () {
-    var camera;
-    camera = new T.PerspectiveCamera(fov, aspect, near, far);
-    if (core.isPocketDevice()) {
-      camera.position.y = 4;
-    } else {
-      camera.position.y = 10;
-    }
-    camera.lookAt(center);
-    var radius = 0.125;
-    var segments = 32;
-    var material = new T.LineBasicMaterial(
-      {
-        color: 0x111111,
-        linewidth: 5,
-        transparent: true,
-        opacity: 0.8
-      }
-    );
-    var geometry = new T.CircleGeometry( radius, segments );
-    geometry.vertices.shift();
-    circle = new T.Line( geometry, material ) ;
-    circle.position.z = -10;
-    camera.add( circle );
-
-    return camera;
-  };
 
   var center = new T.Vector3(0,0,0);
-  var width = window.innerWidth;
-  var height = window.innerHeight;
-  var aspect = width / height;
-  var fov = 40;
-  if (core.isPocketDevice()) {
-    fov = 90;
-  }
-  var near = 0.1;
-  var far = 10000;
   var renderer = new T.WebGLRenderer({
     alpha: true,
     antialias: true,
     logarithmicDepthBuffer: true,
   });
   renderer.setPixelRatio(window.devicePixelRatio||1);
-  renderer.setSize(width, height);
+  renderer.setSize(core.options.width, core.options.height);
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.soft = true;
   var effect = new T.StereoEffect(renderer);
   effect.eyeSeparation = 1;
-  effect.setSize(width, height);
+  effect.setSize(core.options.width, core.options.height);
   var scene = new T.Scene();
-  var circle;
-  var camera = setCameraOptions();
+  var camera = core.setCameraOptions();
+  if (core.isPocketDevice()) {
+    camera.position.y = 4;
+  } else {
+    camera.position.y = 10;
+  }
   var controls = core.setControllerMethod(camera, renderer.domElement);
   var cards = [];
   var buttons = [];
@@ -213,7 +181,7 @@
     spotlight.shadowMapHeight = 1024;
     spotlight.shadowCameraNear = 500;
     spotlight.shadowCameraFar = 4000;
-    spotlight.shadowCameraFov = 30;
+    spotlight.shadowCameraFov = core.options.fov;
     scene.add(spotlight);
   };
 
@@ -273,21 +241,11 @@
     checkIfViewingSomething(cards);
   };
 
-  var resizeRenderer = function () {
-    width = window.innerWidth;
-    height = window.innerHeight;
-    aspect = width / height;
-
-    camera.aspect = aspect;
-    camera.updateProjectionMatrix();
-    renderer.setSize(width, height);
-    effect.setSize(width, height);
-    effect.render(scene, camera);
-
-  };
   var init = function () {
     buildScene();
-    window.addEventListener('resize', resizeRenderer, false);
+    window.addEventListener('resize', function () {
+      core.resizeRenderer(renderer, scene, camera, effect);
+    }, false);
     document.body.appendChild(renderer.domElement);
   };
 
