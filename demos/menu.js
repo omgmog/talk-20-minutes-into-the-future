@@ -274,14 +274,6 @@
     scene.add(spotlight);
   };
 
-  var onViewedTarget = function (target) {
-    var evt = new CustomEvent('onviewedtarget', { detail: target});
-    window.dispatchEvent(evt);
-  };
-
-  var onViewedTargetDebounced = throttle(function (e) {
-    e.detail.callback(e.target);
-  }, 250);
 
   var lastViewedThing = null;
   var triggered = [];
@@ -351,7 +343,6 @@
   var init = function () {
     buildScene();
     window.addEventListener('resize', resizeRenderer, false);
-    window.addEventListener('onviewedtarget', onViewedTargetDebounced, false);
     document.body.appendChild(renderer.domElement);
   };
 
