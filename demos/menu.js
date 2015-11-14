@@ -49,7 +49,7 @@
     },
     {
       title: 'Look Interaction',
-      image: 'image2.jpeg',
+      image: 'image2.png',
       id: 'look_interaction',
       position: {
         x: scaledUnit(-9),
@@ -58,7 +58,7 @@
     },
     {
       title: 'Gamepad Interaction',
-      image: 'image3.jpeg',
+      image: 'image3.png',
       id: 'gamepad_interaction',
       position: {
         x: scaledUnit(0),
@@ -67,7 +67,7 @@
     },
     {
       title: 'Using getUserMedia',
-      image: 'image4.jpeg',
+      image: 'image4.png',
       id: 'getusermedia',
       position: {
         x: scaledUnit(9),
@@ -76,7 +76,7 @@
     },
     {
       title: 'Spacial Audio',
-      image: 'image5.jpeg',
+      image: 'image5.png',
       id: 'spacial_audio',
       position: {
         x: scaledUnit(10),
