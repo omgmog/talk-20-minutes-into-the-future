@@ -3,6 +3,7 @@
   // IMPORTS
   var T = window.THREE;
   var console = window.console;
+  var urlbase = '/demos/';
 
   // UTILITIES
   var scale = 0.8;
@@ -182,18 +183,10 @@
     card.scale.set(scale, scale, 1);
     card.lookAt(new T.Vector3(0,1,0));
     button = card.children[0];
-
-    // Do some magic
-
   };
 
-  var launchDemo = function (demo) {
-    if (isPocketDevice()) {
-      alert(demo.name);
-    }else{
-      console.log(demo.name);
-    }
-    return false;
+  var launchDemo = function (thing) {
+    construct(thing.callback, null);
   };
 
   var createDemoCards = function () {
@@ -220,11 +213,6 @@
       // Extra info
       card.name = item.id;
       card.viewid = 'card-' + i;
-      card.callback = function (e) {
-        console.log(e);
-        throttle(handleCardLook(card), 250);
-      };
-
 
       var buttonTexture = new T.ImageUtils.loadTexture(assetsPath + 'launchButton.png');
       buttonTexture.wrapS = buttonTexture.wrapT = T.ClampToEdgeWrapping;
@@ -244,6 +232,7 @@
       button.viewid = 'button-' + i;
       button.callback = function () {
         // Button stuff here
+        window.location.href = urlbase + card.name;
       };
       buttons.push(button);
       card.add(button);
@@ -286,13 +275,15 @@
 
     items.forEach(function (item, i) {
       var intersects = raycaster.intersectObject(item);
+
       if (intersects.length) {
+        var button = item.children[0];
         if (lastViewedThing === item.viewid) {
           if (count) {
             if (counter <= counterMax) {
               counter++;
             } else {
-              launchDemo(item);
+              launchDemo(button);
               counter = 0;
               count = false;
             }
