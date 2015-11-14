@@ -1,8 +1,7 @@
-(function (window) {
+(function (window, core) {
   'use strict';
   // IMPORTS
   var T = window.THREE;
-  var console = window.console;
   var urlbase = '/demos/';
 
   // UTILITIES
@@ -10,62 +9,13 @@
   var scaledUnit = function (unit) {
     return unit * scale;
   };
-
-  var construct = function (constructor, args) {
-    var F = function () {
-      return constructor.apply(this, args);
-    };
-    F.prototype = constructor.prototype;
-    return new F();
-  };
-
-  var throttle = function (fn, threshhold, scope) {
-    threshhold || (threshhold = 250);
-    var last, deferTimer;
-    return function () {
-      var context = scope || this;
-      var now = +new Date,
-          args = arguments;
-      if (last && now < last + threshhold) {
-        clearTimeout(deferTimer);
-        deferTimer = setTimeout(function () {
-          last = now;
-          fn.apply(context, args);
-        }, threshhold);
-      } else {
-        last = now;
-        fn.apply(context, args);
-      }
-    };
-  };
-
-  var isPocketDevice = function () {
-    // Assuming this is only available on mobile
-    return (typeof window.orientation !== 'undefined');
-  };
-  if (isPocketDevice()) {
+  if (core.isPocketDevice()) {
     document.body.classList.add('throwable');
   }
-
-  console.log('Device orientation:', isPocketDevice());
-
-  var setControllerMethod = function (camera, domElement) {
-    var controls;
-    if (isPocketDevice()) {
-      controls = new T.DeviceOrientationControls(camera, true);
-    } else {
-      controls = new T.OrbitControls(camera, domElement);
-      controls.enableDamping = true;
-      controls.dampingFactor = 0.25;
-      controls.enableZoom = false;
-      controls.enablePan = false;
-    }
-    return controls;
-  };
   var setCameraOptions = function () {
     var camera;
     camera = new T.PerspectiveCamera(fov, aspect, near, far);
-    if (isPocketDevice()) {
+    if (core.isPocketDevice()) {
       camera.position.y = 4;
     } else {
       camera.position.y = 10;
@@ -95,6 +45,9 @@
   var height = window.innerHeight;
   var aspect = width / height;
   var fov = 40;
+  if (core.isPocketDevice()) {
+    fov = 90;
+  }
   var near = 0.1;
   var far = 10000;
   var renderer = new T.WebGLRenderer({
@@ -112,7 +65,7 @@
   var scene = new T.Scene();
   var circle;
   var camera = setCameraOptions();
-  var controls = setControllerMethod(camera, renderer.domElement);
+  var controls = core.setControllerMethod(camera, renderer.domElement);
   var cards = [];
   var buttons = [];
   var assetsPath = 'assets/';
@@ -165,8 +118,8 @@
     }
   ];
   var createPlane = function (geometryOptions, materialOptions) {
-    var geometry = construct(T.PlaneBufferGeometry, geometryOptions);
-    var material = construct(T.MeshLambertMaterial, materialOptions);
+    var geometry = core.construct(T.PlaneBufferGeometry, geometryOptions);
+    var material = core.construct(T.MeshLambertMaterial, materialOptions);
     return new T.Mesh(geometry, material);
   };
   var handleCardLook = function (card) {
@@ -186,7 +139,10 @@
   };
 
   var launchDemo = function (thing) {
-    construct(thing.callback, null);
+    thing.visible = true;
+    setTimeout(function () {
+      core.construct(thing.callback, null);
+    }, 1000);
   };
 
   var createDemoCards = function () {
@@ -204,8 +160,6 @@
           map: texture
         }]
       );
-      card.material.transparent = true;
-      card.material.opacity = 0.5;
       card.position.x = item.position.x;
       card.position.z = item.position.z;
       card.lookAt(center);
@@ -230,8 +184,8 @@
       button.position.set(0, 0, 1);
       button.name = item.id + '_button';
       button.viewid = 'button-' + i;
+      button.visible = false;
       button.callback = function () {
-        // Button stuff here
         window.location.href = urlbase + card.name;
       };
       buttons.push(button);
@@ -339,4 +293,4 @@
 
   // START
   init();
-}(window));
+}(window, window.core));

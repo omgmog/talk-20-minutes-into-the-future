@@ -26,7 +26,7 @@ var demo = (function (window, document) {
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.soft = true;
     el.appendChild(renderer.domElement);
-    controls = core.controllerMethod(controls, camera, renderer.domElement);
+    controls = core.setControllerMethod(camera, renderer.domElement);
 
     effect = new T.StereoEffect(renderer);
     effect.eyeSeparation = 1;
@@ -35,7 +35,7 @@ var demo = (function (window, document) {
     var groundTexture = T.ImageUtils.loadTexture('grid.png');
     groundTexture.wrapS = groundTexture.wrapT = T.RepeatWrapping;
     groundTexture.repeat.set( 100, 100 ); // Number of times to repeat texture
-    ground = gl.build(
+    ground = core.build(
       'PlaneBufferGeometry',
       [200, 200, 4, 4],
       'MeshLambertMaterial',
@@ -49,7 +49,7 @@ var demo = (function (window, document) {
     ground.receiveShadow = true;
     scene.add(ground);
 
-    cube = gl.build(
+    cube = core.build(
       'BoxGeometry',
       [10, 10, 10],
       'MeshPhongMaterial',
@@ -70,7 +70,7 @@ var demo = (function (window, document) {
     var lampy = 20;
     var lampz = -10;
 
-    bulb = gl.build(
+    bulb = core.build(
       'SphereGeometry',
       [1,20,20],
       'MeshPhongMaterial',
@@ -119,10 +119,6 @@ var demo = (function (window, document) {
       effect.setSize(w, h);
       effect.render(scene, camera);
     };
-
-    document.querySelector('button').addEventListener('click', function () {
-      document.body.webkitRequestFullScreen();
-    }, false);
   };
 
   var render = function () {
