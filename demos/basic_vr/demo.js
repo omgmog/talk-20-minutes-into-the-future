@@ -12,7 +12,7 @@ var demo = (function(window, document) {
   if (core.isPocketDevice()) {
     camera.position.set(0, 20, 20);
   } else {
-    camera.position.set(0, 40, 40);
+    camera.position.set(0, 40, 120);
   }
 
   renderer = new T.WebGLRenderer({
@@ -100,6 +100,57 @@ var demo = (function(window, document) {
   scene.add(light);
 
 
+  var lastViewedThing = null;
+  var triggered = [];
+  var count;
+  var counter;
+  var counterMax = 100;
+
+  var checkIfViewingSomething = function (items, callback1, callback2) {
+    var raycaster = new T.Raycaster();
+    raycaster.setFromCamera(core.center, camera);
+
+    items.forEach(function (item, i) {
+      var intersects = raycaster.intersectObject(item);
+
+      if (intersects.length) {
+        if (lastViewedThing === item.viewid) {
+          if (count) {
+            if (counter <= counterMax) {
+              counter++;
+            } else {
+              callback2(item);
+              counter = 0;
+              count = false;
+            }
+          }
+        } else {
+          lastViewedThing = item.viewid;
+          triggered[i] = false;
+          count = false;
+          if (!triggered[i]) {
+            count = true;
+            counter = 0;
+            callback1(item.children[0]);
+            triggered[i] = true;
+          }
+        }
+      }
+    });
+  };
+  var backDevice = core.addBackDevice();
+  scene.add(backDevice);
+
+  var highlightBackDevice = function (device){
+    console.log(device);
+    // Do something to make this notify
+    device.material.visible = true;
+  };
+  var triggerBackDevice = function (device){
+    console.log(device);
+
+    history.go(-1);
+  };
 
   var render = function() {
     cube.rotation.x += 0.04;
@@ -109,8 +160,8 @@ var demo = (function(window, document) {
 
     effect.render(scene, camera);
     requestAnimationFrame(render);
+    checkIfViewingSomething([backDevice], highlightBackDevice, triggerBackDevice);
   };
-
   render();
 
   window.addEventListener('resize', function() {

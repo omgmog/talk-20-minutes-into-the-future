@@ -13,7 +13,6 @@
     document.body.classList.add('throwable');
   }
 
-  var center = new T.Vector3(0,0,0);
   var renderer = new T.WebGLRenderer({
     alpha: true,
     antialias: true,
@@ -36,7 +35,7 @@
   var controls = core.setControllerMethod(camera, renderer.domElement);
   var cards = [];
   var buttons = [];
-  var assetsPath = 'assets/';
+  var assetsPath = core.options.assetsPath;
 
   var data = [
     {
@@ -95,7 +94,7 @@
     // Greedily reset other cards
     cards.forEach(function (card) {
       card.scale.set(1, 1, 1);
-      card.lookAt(center);
+      card.lookAt(core.center);
       button = card.children[0];
     });
 
@@ -110,7 +109,7 @@
     thing.visible = true;
     setTimeout(function () {
       core.construct(thing.callback, null);
-    }, 1000);
+    }, 250);
   };
 
   var createDemoCards = function () {
@@ -130,7 +129,7 @@
       );
       card.position.x = item.position.x;
       card.position.z = item.position.z;
-      card.lookAt(center);
+      card.lookAt(core.center);
 
       // Extra info
       card.name = item.id;
@@ -190,22 +189,22 @@
   var triggered = [];
   var count;
   var counter;
-  var counterMax = 250;
-  var checkIfViewingSomething = function (items) {
+  var counterMax = 100;
+
+  var checkIfViewingSomething = function (items, callback1, callback2) {
     var raycaster = new T.Raycaster();
-    raycaster.setFromCamera(center, camera);
+    raycaster.setFromCamera(core.center, camera);
 
     items.forEach(function (item, i) {
       var intersects = raycaster.intersectObject(item);
 
       if (intersects.length) {
-        var button = item.children[0];
         if (lastViewedThing === item.viewid) {
           if (count) {
             if (counter <= counterMax) {
               counter++;
             } else {
-              launchDemo(button);
+              callback2(item.children[0]);
               counter = 0;
               count = false;
             }
@@ -217,7 +216,7 @@
           if (!triggered[i]) {
             count = true;
             counter = 0;
-            handleCardLook(item);
+            callback1(item);
             triggered[i] = true;
           }
         }
@@ -238,7 +237,7 @@
     effect.render(scene, camera);
     controls.update();
     requestAnimationFrame(animateRenderer);
-    checkIfViewingSomething(cards);
+    checkIfViewingSomething(cards, handleCardLook, launchDemo);
   };
 
   var init = function () {

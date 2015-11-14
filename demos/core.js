@@ -17,26 +17,6 @@ var core = (function (window) {
     return mesh;
   };
 
-  var throttle = function (fn, threshhold, scope) {
-    threshhold || (threshhold = 250);
-    var last, deferTimer;
-    return function () {
-      var context = scope || this;
-      var now = +new Date,
-          args = arguments;
-      if (last && now < last + threshhold) {
-        clearTimeout(deferTimer);
-        deferTimer = setTimeout(function () {
-          last = now;
-          fn.apply(context, args);
-        }, threshhold);
-      } else {
-        last = now;
-        fn.apply(context, args);
-      }
-    };
-  };
-
   var isPocketDevice = function () {
     // Assuming this is only available on mobile
     return (typeof window.orientation !== 'undefined');
@@ -97,6 +77,7 @@ var core = (function (window) {
     aspect: 1,
     near: 0.1,
     far: 1000,
+    assetsPath: 'assets/'
   };
   // Override some options based on context
   options.aspect = options.width / options.height;
@@ -104,14 +85,55 @@ var core = (function (window) {
     options.fov = 90;
   }
 
+  var center = new T.Vector3(0,0,0);
+
+  var addBackDevice = function () {
+    var texture = new T.ImageUtils.loadTexture('../' + core.options.assetsPath + 'backButton.png');
+    texture.wrapS = texture.wrapT = T.ClampToEdgeWrapping;
+    texture.repeat.set(1,1);
+    texture.minFilter = T.LinearFilter;
+    var device = build(
+      'CircleGeometry',
+      [10, 32],
+      'MeshBasicMaterial',
+      [{
+        color: 0xff0000,
+        map: texture
+      }]
+    );
+    device.name = 'device';
+    device.position.set(0, 4, 60);
+    device.rotation.x = (Math.PI * 2) / 2;
+    device.rotation.z = (Math.PI * 2) / 2;
+
+    // Add a button child here
+
+    var button = build(
+      'CircleGeometry',
+      [10.2, 32],
+      'LineBasicMaterial',
+      [{
+        color: 0xffff00
+      }]
+    );
+    button.name = 'button';
+    button.material.visible = false;
+    button.position.set(0, 0, -0.5);
+
+    device.add(button);
+
+    return device;
+  };
+
   return {
     options: options,
     construct: construct,
     build: build,
-    throttle: throttle,
     isPocketDevice: isPocketDevice,
     setControllerMethod: setControllerMethod,
     resizeRenderer: resizeRenderer,
-    setCameraOptions: setCameraOptions
+    setCameraOptions: setCameraOptions,
+    addBackDevice: addBackDevice,
+    center: center
   };
 }(window));
