@@ -114,6 +114,7 @@
   var controls = setControllerMethod(camera, renderer.domElement);
   var cards = [];
   var buttons = [];
+  var assetsPath = 'assets/';
 
   var data = [
     {
@@ -207,7 +208,7 @@
     data.forEach(function (item, i) {
       var texture;
       if (item.image) {
-        texture = new T.ImageUtils.loadTexture(item.image);
+        texture = new T.ImageUtils.loadTexture(assetsPath + item.image);
         texture.wrapS = texture.wrapT = T.ClampToEdgeWrapping;
         texture.repeat.set(1,1);
         texture.minFilter = T.LinearFilter;
@@ -233,7 +234,7 @@
       };
 
 
-      var buttonTexture = new T.ImageUtils.loadTexture('launchButton.png');
+      var buttonTexture = new T.ImageUtils.loadTexture(assetsPath + 'launchButton.png');
       buttonTexture.wrapS = buttonTexture.wrapT = T.ClampToEdgeWrapping;
       buttonTexture.repeat.set(1,1);
       buttonTexture.minFilter = T.LinearFilter;
