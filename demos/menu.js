@@ -112,7 +112,8 @@
   var circle;
   var camera = setCameraOptions();
   var controls = setControllerMethod(camera, renderer.domElement);
-  var Tobjects = [];
+  var cards = [];
+  var buttons = [];
 
   var data = [
     {
@@ -167,14 +168,41 @@
     return new T.Mesh(geometry, material);
   };
   var handleCardLook = function (card) {
-    // Let's do some magic for the card look here
-    console.log("I'm the card for " + card.demoid);
-    card.material.transparent = false;
+    var button;
+    // Greedily reset other cards
+    cards.forEach(function (card) {
+      card.scale.set(1, 1, 1);
+      card.lookAt(center);
+      button = card.children[0];
+    });
 
-    setTimeout(function () {
-      card.material.transparent = true;
-    }, 1000);
+    // Make this card prominent
+    var scale = 1.4;
+    card.scale.set(scale, scale, 1);
+    card.lookAt(new T.Vector3(0,1,0));
+    button = card.children[0];
+
+    // Do some magic
+
   };
+
+  var launchDemo = function (demo) {
+    if (isPocketDevice()) {
+      alert(demo.name);
+    }else{
+      console.log(demo.name);
+    }
+    return false;
+    var iframe = document.createElement('iframe');
+    iframe.src = window.location.href + demo.name;
+    iframe.width = width;
+    iframe.height = height;
+    document.body.innerHTML = iframe.outerHTML;
+    window.removeEventListener('onviewedtarget', onViewedTargetDebounced, false);
+    scene = null;
+    cancelAnimationFrame(rendering);
+  };
+
   var createDemoCards = function () {
     data.forEach(function (item, i) {
       var texture;
@@ -197,13 +225,37 @@
       card.lookAt(center);
 
       // Extra info
-      card.demoid = item.id;
-      card.viewid = "card-" + i;
-      card.callback = function () {
+      card.name = item.id;
+      card.viewid = 'card-' + i;
+      card.callback = function (e) {
+        console.log(e);
         throttle(handleCardLook(card), 250);
       };
 
-      Tobjects.push(card);
+
+      var buttonTexture = new T.ImageUtils.loadTexture('launchButton.png');
+      buttonTexture.wrapS = buttonTexture.wrapT = T.ClampToEdgeWrapping;
+      buttonTexture.repeat.set(1,1);
+      buttonTexture.minFilter = T.LinearFilter;
+
+      var button = createPlane(
+        [2, 1, 1, 1],
+        [{
+          color: 0xff0000,
+          map: buttonTexture,
+        }]
+      );
+
+      button.position.set(0, 0, 1);
+      button.name = item.id + '_button';
+      button.viewid = 'button-' + i;
+      button.callback = function () {
+        // Button stuff here
+      };
+      buttons.push(button);
+      card.add(button);
+
+      cards.push(card);
       scene.add(card);
     });
   };
@@ -264,9 +316,6 @@
     createGround();
     createDemoCards();
     createLights();
-    Tobjects.forEach(function (obj) {
-      console.log(obj );
-    });
     scene.add(camera);
     animateRenderer();
   };
@@ -276,7 +325,7 @@
     effect.render(scene, camera);
     controls.update();
     requestAnimationFrame(animateRenderer);
-    checkIfViewingSomething(Tobjects);
+    checkIfViewingSomething(cards);
   };
 
   var resizeRenderer = function () {
