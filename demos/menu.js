@@ -284,25 +284,40 @@
   }, 250);
 
   var lastViewedThing = null;
+  var triggered = [];
+  var count;
+  var counter;
+  var counterMax = 250;
   var checkIfViewingSomething = function (items) {
-    setTimeout(function () {
-      var raycaster = new T.Raycaster();
-      raycaster.setFromCamera(center, camera);
+    var raycaster = new T.Raycaster();
+    raycaster.setFromCamera(center, camera);
 
-      items.forEach(function (item, i) {
-        var intersects = raycaster.intersectObject(item);
-        if (intersects.length) {
-          if (lastViewedThing !== item.viewid) {
-            lastViewedThing = item.viewid;
-            item = intersects[0].object;
-            setTimeout(function () {
-              onViewedTarget(item);
-            }, 250);
+    items.forEach(function (item, i) {
+      var intersects = raycaster.intersectObject(item);
+      if (intersects.length) {
+        if (lastViewedThing === item.viewid) {
+          if (count) {
+            if (counter <= counterMax) {
+              counter++;
+            } else {
+              launchDemo(item);
+              counter = 0;
+              count = false;
+            }
+          }
+        } else {
+          lastViewedThing = item.viewid;
+          triggered[i] = false;
+          count = false;
+          if (!triggered[i]) {
+            count = true;
+            counter = 0;
+            handleCardLook(item);
+            triggered[i] = true;
           }
         }
-      });
-
-    }, 1000);
+      }
+    });
   };
 
   var buildScene = function () {
