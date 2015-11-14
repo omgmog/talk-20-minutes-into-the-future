@@ -194,14 +194,6 @@
       console.log(demo.name);
     }
     return false;
-    var iframe = document.createElement('iframe');
-    iframe.src = window.location.href + demo.name;
-    iframe.width = width;
-    iframe.height = height;
-    document.body.innerHTML = iframe.outerHTML;
-    window.removeEventListener('onviewedtarget', onViewedTargetDebounced, false);
-    scene = null;
-    cancelAnimationFrame(rendering);
   };
 
   var createDemoCards = function () {
