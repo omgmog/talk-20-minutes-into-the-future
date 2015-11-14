@@ -4,17 +4,16 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title></title>
   <style>
 
-    html, body {
-      overflow: hidden;
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      background: #777;
-    }
+  html, body {
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background: #777;
+  }
   button {
     display: none;
   }
@@ -45,16 +44,38 @@
   :-webkit-full-screen button {
     display: none;
   }
+  iframe {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+  }
+  :-webkit-full-screen iframe {
+    z-index: 10001;
+  }
   </style>
 </head>
 <body>
-
-  <button>Go Fullscreen</button>
-  <script src="../assets/js/lib/three.min.js"></script>
-  <script src="../assets/js/lib/StereoEffect.js"></script>
-  <script src="../assets/js/lib/Projector.js"></script>
-  <script src="../assets/js/lib/OrbitControls.js"></script>
-  <script src="../assets/js/lib/DeviceOrientationControls.js"></script>
-  <script src="menu.js"></script>
+  <button>Fullscreen</button>
+  <iframe src="menu.html" frameborder="0"></iframe>
+  <script>
+    'use strict';
+    var isPocketDevice = function () {
+      // Assuming this is only available on mobile
+      return (typeof window.orientation !== 'undefined');
+    };
+    if (isPocketDevice()) {
+      document.body.classList.add('throwable');
+    }
+    document.querySelector('button').addEventListener('click', function () {
+      document.body.webkitRequestFullScreen();
+    }, false);
+  </script>
 </body>
 </html>

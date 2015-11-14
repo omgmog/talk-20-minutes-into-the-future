@@ -346,10 +346,6 @@
     window.addEventListener('resize', resizeRenderer, false);
     window.addEventListener('onviewedtarget', onViewedTargetDebounced, false);
     document.body.appendChild(renderer.domElement);
-
-    document.querySelector('button').addEventListener('click', function () {
-      document.body.webkitRequestFullScreen();
-    }, false);
   };
 
   // START
