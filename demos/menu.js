@@ -70,6 +70,22 @@
       camera.position.y = 10;
     }
     camera.lookAt(center);
+    var radius = 0.125;
+    var segments = 32;
+    var material = new T.LineBasicMaterial(
+      {
+        color: 0x111111,
+        linewidth: 5,
+        transparent: true,
+        opacity: 0.8
+      }
+    );
+    var geometry = new T.CircleGeometry( radius, segments );
+    geometry.vertices.shift();
+    circle = new T.Line( geometry, material ) ;
+    circle.position.z = -10;
+    camera.add( circle );
+
     return camera;
   };
 
@@ -93,6 +109,7 @@
   effect.eyeSeparation = 1;
   effect.setSize(width, height);
   var scene = new T.Scene();
+  var circle;
   var camera = setCameraOptions();
   var controls = setControllerMethod(camera, renderer.domElement);
   var Tobjects = [];
