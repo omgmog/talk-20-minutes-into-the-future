@@ -3,14 +3,9 @@ var demo = (function(window, document) {
   var core = window.core;
   var T = window.THREE;
 
-  var renderer, scene, camera, effect, controls,
-    width = window.innerWidth,
-    height = window.innerHeight;
+  var renderer, scene, camera, effect, controls;
 
   var cube, ground, ambientLight, light, bulb;
-
-  var el = document.body;
-
 
   scene = new T.Scene();
   camera = core.setCameraOptions();
@@ -25,15 +20,15 @@ var demo = (function(window, document) {
     antialias: true,
     logarithmicDepthBuffer: true,
   });
-  renderer.setSize(width, height);
+  renderer.setSize(core.options.width, core.options.height);
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.soft = true;
-  el.appendChild(renderer.domElement);
+  document.body.appendChild(renderer.domElement);
   controls = core.setControllerMethod(camera, renderer.domElement);
 
   effect = new T.StereoEffect(renderer);
   effect.eyeSeparation = 1;
-  effect.setSize(width, height);
+  effect.setSize(core.options.width, core.options.height);
 
   var groundTexture = T.ImageUtils.loadTexture('grid.png');
   groundTexture.wrapS = groundTexture.wrapT = T.RepeatWrapping;
@@ -70,7 +65,7 @@ var demo = (function(window, document) {
   var lampz = -10;
 
   bulb = core.build(
-    'SphereGeometry', [1, 20, 20],
+    'SphereGeometry', [0.5, 20, 20],
     'MeshPhongMaterial', [{
       color: 0xffff00,
       shading: T.FlatShading,
@@ -88,10 +83,10 @@ var demo = (function(window, document) {
   light.castShadow = true;
 
   // Increase size for sharper shadows
-  light.shadowMapWidth = 512;
-  light.shadowMapHeight = 512;
+  light.shadowMapWidth = 1024;
+  light.shadowMapHeight = 1024;
 
-  var d = 128;
+  var d = 256;
 
   light.shadowCameraLeft = -d;
   light.shadowCameraRight = d;

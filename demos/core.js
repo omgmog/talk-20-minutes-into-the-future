@@ -70,11 +70,7 @@ var core = (function (window) {
   var setCameraOptions = function () {
     var camera;
     camera = new T.PerspectiveCamera(core.options.fov, core.options.aspect, core.options.near, core.options.far);
-    if (core.isPocketDevice()) {
-      camera.position.y = 4;
-    } else {
-      camera.position.y = 10;
-    }
+
     var radius = 0.125;
     var segments = 32;
     var material = new T.LineBasicMaterial(
