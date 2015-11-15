@@ -101,100 +101,114 @@ var demo = (function(window, document) {
   var boardWidth = (iconWidth * 3) + (space * 4);
 
   levels.forEach(function (level) {
-    var target = level.target;
-    var rows = level.rows;
-
+    // Build an object
     var levelObject = new T.Object3D();
-    var levelBoard = new T.Object3D();
-    levelBoard.name = target;
-    var targetBoard = new T.Object3D();
-    targetBoard.position.x = boardWidth;
-    levelObject.add(levelBoard);
-    levelObject.add(targetBoard);
-
-    var targetTexture = T.ImageUtils.loadTexture('icons/' + target + '.png');
-      targetTexture.wrapS = targetTexture.wrapT = T.ClampToEdgeWrapping;
-      targetTexture.repeat.set(1,1);
-      targetTexture.minFilter = T.LinearFilter;
-
-    var targetWidth = (iconWidth * 2) + space;
-    var targetHeight = (iconHeight * 2) + space;
-    var targetObject = core.build(
-      'PlaneBufferGeometry',
-      [targetWidth, targetHeight, 1, 1],
-      'MeshLambertMaterial',
-      [{
-        map: targetTexture
-      }]
-    );
-    targetObject.name = target;
-    targetObject.position.y = -space;
-    targetBoard.add(targetObject);
-
-    var statusTexture = T.ImageUtils.loadTexture('icons/instructions.png');
-      statusTexture.wrapS = statusTexture.wrapT = T.ClampToEdgeWrapping;
-      statusTexture.repeat.set(1,1);
-      statusTexture.minFilter = T.LinearFilter;
-    var statusWidth = (iconWidth * 2) + space;
-    var statusHeight = (iconHeight);
-    var statusObject = core.build(
-      'PlaneBufferGeometry',
-      [statusWidth, statusHeight, 1, 1],
-      'MeshLambertMaterial',
-      [{
-        map: statusTexture
-      }]
-    );
-    statusObject.position.y = -targetHeight;
-    targetBoard.add(statusObject);
-
-    rows.forEach(function (row, r) {
-      var rowObject = new T.Object3D();
-
-      row.forEach(function (icon, i) {
-        var actualIcon = icons[icon];
-        var iconTexture = T.ImageUtils.loadTexture('icons/' + actualIcon + '.png');
-        iconTexture.wrapS = iconTexture.wrapT = T.ClampToEdgeWrapping;
-        iconTexture.repeat.set(1,1);
-        iconTexture.minFilter = T.LinearFilter;
-
-        var iconObject = core.build(
-          'PlaneBufferGeometry',
-          [iconWidth,iconHeight,1,1],
-          'MeshLambertMaterial',
-          [{
-            map: iconTexture
-          }]
-        );
-        iconObject.name = actualIcon;
-        iconObject.position.x = (i * iconWidth) + (space * (i - 1));
-        iconObject.position.y = (-r * iconHeight) + (space * -(r - 1));
-
-        var button = core.build(
-          'PlaneBufferGeometry',
-          [iconWidth, iconHeight, 1, 1],
-          'MeshLambertMaterial',
-          [{
-            color: 0xff0000
-          }]
-        );
-        button.material.visible = false;
-        button.position.set(0, 0, 1);
-        iconObject.add(button);
-        rowObject.add(iconObject);
-      });
-
-
-      levelBoard.add(rowObject);
-    });
-
-    targetBoard.position.z = -20;
-    levelBoard.lookAt(new T.Vector3(2,0,4));
-
     levelObject.position.y = 20;
     levelObject.position.z = -5;
     levelObject.position.x = -(((5 * iconWidth) + (2 * space)) / 2);
 
+    // For each level
+    var target = level.target;
+    var rows = level.rows;
+
+      // In that object, build a level board
+      var levelBoard = new T.Object3D();
+      levelBoard.name = target;
+      levelBoard.lookAt(new T.Vector3(2,0,4));
+
+        // In that level board, build a row
+        rows.forEach(function (row, r) {
+          var rowObject = new T.Object3D();
+
+          row.forEach(function (icon, i) {
+            var actualIcon = icons[icon];
+            var iconTexture = T.ImageUtils.loadTexture('icons/' + actualIcon + '.png');
+            iconTexture.wrapS = iconTexture.wrapT = T.ClampToEdgeWrapping;
+            iconTexture.repeat.set(1,1);
+            iconTexture.minFilter = T.LinearFilter;
+            var iconObject = core.build(
+              'PlaneBufferGeometry',
+              [iconWidth,iconHeight,1,1],
+              'MeshLambertMaterial',
+              [{
+                map: iconTexture
+              }]
+            );
+            iconObject.name = actualIcon;
+            iconObject.position.x = (i * iconWidth) + (space * (i - 1));
+            iconObject.position.y = (-r * iconHeight) + (space * -(r - 1));
+
+            var button = core.build(
+              'PlaneBufferGeometry',
+              [iconWidth, iconHeight, 1, 1],
+              'MeshLambertMaterial',
+              [{
+                color: 0xff0000
+              }]
+            );
+            button.material.visible = false;
+            button.position.set(0, 0, 1);
+            iconObject.add(button);
+            rowObject.add(iconObject);
+          });
+
+        // Add the row to the level board
+          levelBoard.add(rowObject);
+        });
+
+      // Add the level board to the object
+      levelObject.add(levelBoard);
+
+      // In that object, build a target board
+      var targetBoard = new T.Object3D();
+      targetBoard.position.z = -20;
+      targetBoard.position.x = boardWidth;
+
+        // In that target board build a target icon
+        var targetTexture = T.ImageUtils.loadTexture('icons/' + target + '.png');
+        targetTexture.wrapS = targetTexture.wrapT = T.ClampToEdgeWrapping;
+        targetTexture.repeat.set(1,1);
+        targetTexture.minFilter = T.LinearFilter;
+        var targetWidth = (iconWidth * 2) + space;
+        var targetHeight = (iconHeight * 2) + space;
+        var targetIcon = core.build(
+          'PlaneBufferGeometry',
+          [targetWidth, targetHeight, 1, 1],
+          'MeshLambertMaterial',
+          [{
+            map: targetTexture
+          }]
+        );
+        targetIcon.name = target;
+        targetIcon.position.y = -space;
+
+        // Add the icon to target board
+        targetBoard.add(targetIcon);
+
+        // In that target board build a status
+        var statusTexture = T.ImageUtils.loadTexture('icons/instructions.png');
+        statusTexture.wrapS = statusTexture.wrapT = T.ClampToEdgeWrapping;
+        statusTexture.repeat.set(1,1);
+        statusTexture.minFilter = T.LinearFilter;
+        var statusWidth = (iconWidth * 2) + space;
+        var statusHeight = (iconHeight);
+        var statusObject = core.build(
+          'PlaneBufferGeometry',
+          [statusWidth, statusHeight, 1, 1],
+          'MeshLambertMaterial',
+          [{
+            map: statusTexture
+          }]
+        );
+        statusObject.position.y = -targetHeight;
+
+        // Add the status to target board
+        targetBoard.add(statusObject);
+
+      // Add the target board to the object
+      levelObject.add(targetBoard);
+
+    // Add the level object to the levelobjects list
     levelObjects.push(levelObject);
   });
 
