@@ -14,6 +14,7 @@ var demo = (function(window, document) {
   } else {
     camera.position.set(0, 40, 120);
   }
+  scene.add(camera);
 
   renderer = new T.WebGLRenderer({
     alpha: true,
@@ -28,13 +29,15 @@ var demo = (function(window, document) {
 
   effect = new T.StereoEffect(renderer);
   effect.eyeSeparation = 1;
+  effect.focalLength = 25;
   effect.setSize(core.options.width, core.options.height);
 
   var groundTexture = T.ImageUtils.loadTexture('grid.png');
   groundTexture.wrapS = groundTexture.wrapT = T.RepeatWrapping;
-  groundTexture.repeat.set(100, 100); // Number of times to repeat texture
+  groundTexture.repeat.set(1000, 1000); // Number of times to repeat texture
+  groundTexture.anisotropy = renderer.getMaxAnisotropy();
   ground = core.build(
-    'PlaneBufferGeometry', [200, 200, 4, 4],
+    'PlaneBufferGeometry', [2000, 2000, 100],
     'MeshLambertMaterial', [{
       color: 0x222222,
       map: groundTexture
@@ -142,14 +145,10 @@ var demo = (function(window, document) {
   scene.add(backDevice);
 
   var highlightBackDevice = function (device){
-    console.log(device);
-    // Do something to make this notify
     device.material.visible = true;
   };
-  var triggerBackDevice = function (device){
-    console.log(device);
-
-    history.go(-1);
+  var triggerBackDevice = function (){
+    history.back();
   };
 
   var render = function() {
@@ -163,7 +162,6 @@ var demo = (function(window, document) {
     checkIfViewingSomething([backDevice], highlightBackDevice, triggerBackDevice);
   };
   render();
-
   window.addEventListener('resize', function() {
     core.resizeRenderer(renderer, scene, camera, effect);
   }, false);

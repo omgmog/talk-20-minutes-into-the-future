@@ -24,6 +24,7 @@
   renderer.shadowMap.soft = true;
   var effect = new T.StereoEffect(renderer);
   effect.eyeSeparation = 1;
+  effect.focalLength = 25;
   effect.setSize(core.options.width, core.options.height);
   var scene = new T.Scene();
   var camera = core.setCameraOptions();

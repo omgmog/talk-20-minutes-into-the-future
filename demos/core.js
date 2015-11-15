@@ -51,20 +51,19 @@ var core = (function (window) {
     var camera;
     camera = new T.PerspectiveCamera(core.options.fov, core.options.aspect, core.options.near, core.options.far);
 
-    var radius = 0.125;
-    var segments = 32;
-    var material = new T.LineBasicMaterial(
-      {
-        color: 0x111111,
-        linewidth: 5,
+
+    var circle = build(
+      'CircleGeometry',
+      [0.1, 32],
+      'MeshBasicMaterial',
+      [{
+        color: 0xff0000,
         transparent: true,
-        opacity: 0.8
-      }
+        opacity: 0.5
+      }]
     );
-    var geometry = new T.CircleGeometry( radius, segments );
-    geometry.vertices.shift();
-    var circle = new T.Line( geometry, material ) ;
     circle.position.z = -10;
+
     camera.add(circle);
 
     return camera;
@@ -98,7 +97,7 @@ var core = (function (window) {
       'MeshBasicMaterial',
       [{
         color: 0xff0000,
-        map: texture
+        map: texture,
       }]
     );
     device.name = 'device';
