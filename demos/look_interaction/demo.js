@@ -269,10 +269,11 @@ var demo = (function(window, document) {
   }, 100);
 
   var getCurrentLevelIcons = function (currentLevel) {
+    var currentLevelObject = levelObjects[currentLevel].children[0];
     return [
-      levelObjects[currentLevel].children[0].children[0].children,
-      levelObjects[currentLevel].children[0].children[1].children,
-      levelObjects[currentLevel].children[0].children[2].children
+      currentLevelObject.children[0].children,
+      currentLevelObject.children[1].children,
+      currentLevelObject.children[2].children
     ];
   };
 
