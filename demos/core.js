@@ -134,7 +134,6 @@ var core = (function (window) {
     var sound = new Howl({
       urls: [file],
       onend: function() {
-        console.log('Finished!');
         playing = false;
       }
     });
