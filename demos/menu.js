@@ -151,7 +151,6 @@
 
       cards.push(card);
       scene.add(card);
-      console.log(card);
     });
   };
   var createGround = function () {
