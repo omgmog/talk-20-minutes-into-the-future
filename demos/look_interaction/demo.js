@@ -275,28 +275,29 @@ var demo = (function(window, document) {
 
   var testIfCorrectIcon = function (icon) {
     setTimeout(function () {
-    var target = icon.parent.parent.name;
-    var current = icon.name;
-    var color, image;
-    var statusMaterial = levelObjects[currentLevel].children[1].children[1].material;
-    statusMaterial.visible = false;
+      var target = icon.parent.parent.name;
+      var current = icon.name;
+      var color, image;
+      var statusMaterial = levelObjects[currentLevel].children[1].children[1].material;
+      statusMaterial.visible = false;
 
-    if (current !== target) {
-      image = 'icons/wrong.png';
-      color = 0xff0000;
-    } else {
-      image = 'icons/correct.png';
-      color = 0x00ff00;
-      levelPassed = true;
-    }
-    var texture = new T.ImageUtils.loadTexture(image);
-    texture.wrapS = texture.wrapT = T.ClampToEdgeWrapping;
-    texture.repeat.set(1,1);
-    texture.minFilter = T.LinearFilter;
-    statusMaterial.map = texture;
-    // statusMaterial.needsUpdate = true;
-    statusMaterial.color.setHex(color);
-    statusMaterial.visible = true;
+      if (current !== target) {
+        image = 'icons/wrong.png';
+        color = 0xff0000;
+        core.playSound('wrong.mp3');
+      } else {
+        image = 'icons/correct.png';
+        color = 0x00ff00;
+        levelPassed = true;
+        core.playSound('correct.mp3');
+      }
+      var texture = new T.ImageUtils.loadTexture(image);
+      texture.wrapS = texture.wrapT = T.ClampToEdgeWrapping;
+      texture.repeat.set(1,1);
+      texture.minFilter = T.LinearFilter;
+      statusMaterial.map = texture;
+      statusMaterial.color.setHex(color);
+      statusMaterial.visible = true;
     }, 250);
   };
 

@@ -124,6 +124,35 @@ var core = (function (window) {
     return device;
   };
 
+  // Yeah...
+  var playing = false;
+  var offset = 250;
+  var last, deferTimer;
+  var playSound = function (file) {
+    var now = new Date;
+
+    var sound = new Howl({
+      urls: [file],
+      onend: function() {
+        console.log('Finished!');
+        playing = false;
+      }
+    });
+    if (!playing ) {
+      playing = true;
+      if (last && now < last + offset) {
+        deferTimer = setTimeout(function () {
+          last = now;
+          sound.play();
+        }, offset);
+      } else {
+        last = now;
+        sound.play();
+      }
+    }
+
+  };
+
   return {
     options: options,
     construct: construct,
@@ -133,6 +162,7 @@ var core = (function (window) {
     resizeRenderer: resizeRenderer,
     setCameraOptions: setCameraOptions,
     addBackDevice: addBackDevice,
-    center: center
+    center: center,
+    playSound: playSound
   };
 }(window));
