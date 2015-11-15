@@ -95,9 +95,9 @@ var demo = (function(window, document) {
 
   var levelObjects = [];
 
-  var iconWidth = 8;
-  var iconHeight = 6;
-  var space = 2;
+  var iconWidth = 12;
+  var iconHeight = 9;
+  var space = 6;
   var boardWidth = (iconWidth * 3) + (space * 4);
 
   levels.forEach(function (level) {
@@ -191,7 +191,7 @@ var demo = (function(window, document) {
     targetBoard.position.z = -20;
     levelBoard.lookAt(new T.Vector3(2,0,4));
 
-    levelObject.position.y = 15;
+    levelObject.position.y = 20;
     levelObject.position.z = -5;
     levelObject.position.x = -(((5 * iconWidth) + (2 * space)) / 2);
 
@@ -228,7 +228,7 @@ var demo = (function(window, document) {
           setTimeout(function () {
             triggered[item.id] = null;
             callback2(item);
-          }, 250);
+          }, 1000);
         }
       }
 
@@ -272,7 +272,9 @@ var demo = (function(window, document) {
   var highlightIcon = function (icon) {
     // icon.material.visible = true;
   };
+
   var testIfCorrectIcon = function (icon) {
+    setTimeout(function () {
     var target = icon.parent.parent.name;
     var current = icon.name;
     var color, image;
@@ -295,6 +297,7 @@ var demo = (function(window, document) {
     // statusMaterial.needsUpdate = true;
     statusMaterial.color.setHex(color);
     statusMaterial.visible = true;
+    }, 250);
   };
 
   var resetIcon = function (icon) {
@@ -310,7 +313,12 @@ var demo = (function(window, document) {
     currentLevelIcons = [].concat.apply([], currentLevelIcons);
     checkIfViewingSomething(currentLevelIcons, highlightIcon, testIfCorrectIcon, resetIcon);
 
-    levelObjects[currentLevel].children[1].lookAt(new T.Vector3(camera.position.x, 0, camera.position.z));
+    // Make targetBoard look at camera
+    var targetBoard = levelObjects[currentLevel].children[1];
+    targetBoard.lookAt(
+      new T.Vector3(camera.position.x, 0, camera.position.z)
+    );
+
   };
   render();
 
