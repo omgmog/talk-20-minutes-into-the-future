@@ -55,7 +55,18 @@ var demo = (function(window, document) {
 
 
   // First define each level
-  var icons = ['dorito', 'cake', 'cheese', 'donut'];
+  var icons = [
+    'dorito', 'cake', 'cheese', 'donut',
+    'gameover-1',
+    'gameover-2',
+    'gameover-3',
+    'gameover-4',
+    'gameover-5',
+    'gameover-6',
+    'gameover-7',
+    'gameover-8',
+    'gameover-9',
+  ];
 
   var levels = [
     {
@@ -88,6 +99,14 @@ var demo = (function(window, document) {
         [2,0,1],
         [1,3,0],
         [0,1,2],
+      ]
+    },
+    {
+      target: 'gameover',
+      rows: [
+        [4, 5, 6],
+        [7, 8, 9],
+        [10, 11, 12]
       ]
     }
   ];
