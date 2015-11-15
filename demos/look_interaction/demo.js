@@ -73,6 +73,22 @@ var demo = (function(window, document) {
         [3,1,0],
         [2,0,3],
       ]
+    },
+    {
+      target: 'cheese',
+      rows: [
+        [0,1,3],
+        [3,0,1],
+        [0,1,2],
+      ]
+    },
+    {
+      target: 'donut',
+      rows: [
+        [2,0,1],
+        [1,3,0],
+        [0,1,2],
+      ]
     }
   ];
 
