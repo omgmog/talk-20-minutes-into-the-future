@@ -68,7 +68,7 @@ var demo = (function(window, document) {
 
 
 
-  speaker.position.set(0, 10, -100);
+  speaker.position.set(0, 10, -40);
   speaker.rotation.y = -Math.PI;
   speaker.castShadow = true;
   speaker.receiveShadow = true;
@@ -116,7 +116,7 @@ var demo = (function(window, document) {
   scene.add(backDevice);
 
   var playDevice = core.build('CubeGeometry', [30, 15, 10], 'MeshLambertMaterial', [{map: woodTexture}]);
-  playDevice.position.set(35, 0, -80);
+  playDevice.position.set(35, 0, -20);
 
 
   var buttonMaterials, buttonMaterialsArray = [];
