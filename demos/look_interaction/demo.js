@@ -275,7 +275,7 @@ var demo = (function(window, document) {
 
   var testIfCorrectIcon = function (icon) {
     setTimeout(function () {
-      var target = icon.parent.parent.name;
+      var target = levels[currentLevel].target;
       var current = icon.name;
       var color, image;
       var statusMaterial = levelObjects[currentLevel].children[1].children[1].material;
