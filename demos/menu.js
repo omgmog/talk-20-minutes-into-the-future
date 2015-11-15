@@ -1,14 +1,9 @@
 (function (window, core) {
   'use strict';
-  // IMPORTS
+
   var T = window.THREE;
   var urlbase = '/demos/';
 
-  // UTILITIES
-  var scale = 0.8;
-  var scaledUnit = function (unit) {
-    return unit * scale;
-  };
   if (core.isPocketDevice()) {
     document.body.classList.add('throwable');
   }
@@ -31,21 +26,25 @@
   if (core.isPocketDevice()) {
     camera.position.y = 4;
   } else {
-    camera.position.y = 10;
+    camera.position.y = 20;
   }
   var controls = core.setControllerMethod(camera, renderer.domElement);
   var cards = [];
   var buttons = [];
   var assetsPath = core.options.assetsPath;
 
+  var rad = 15;
+
+  var posx = function (angle) { return rad * Math.cos(angle * Math.PI / 360);};
+  var posz = function (angle) { return rad * -Math.sin(angle * Math.PI / 360);};
   var data = [
     {
       title: 'Basic VR',
       image: 'image1.png',
       id: 'basic_vr',
       position: {
-        x: scaledUnit(-10),
-        z: scaledUnit(-4),
+        x: posx(180),
+        z: posz(180)
       }
     },
     {
@@ -53,17 +52,8 @@
       image: 'image2.png',
       id: 'look_interaction',
       position: {
-        x: scaledUnit(-9),
-        z: scaledUnit(6.5),
-      }
-    },
-    {
-      title: 'Gamepad Interaction',
-      image: 'image3.png',
-      id: 'gamepad_interaction',
-      position: {
-        x: scaledUnit(0),
-        z: scaledUnit(11),
+        x: posx(100),
+        z: posz(100),
       }
     },
     {
@@ -71,8 +61,8 @@
       image: 'image4.png',
       id: 'getusermedia',
       position: {
-        x: scaledUnit(9),
-        z: scaledUnit(6.5),
+        x: posx(20),
+        z: posz(20),
       }
     },
     {
@@ -80,8 +70,8 @@
       image: 'image5.png',
       id: 'spacial_audio',
       position: {
-        x: scaledUnit(10),
-        z: scaledUnit(-4),
+        x: posx(-60),
+        z: posz(-60),
       }
     }
   ];
@@ -161,6 +151,7 @@
 
       cards.push(card);
       scene.add(card);
+      console.log(card);
     });
   };
   var createGround = function () {
@@ -249,6 +240,5 @@
     document.body.appendChild(renderer.domElement);
   };
 
-  // START
   init();
 }(window, window.core));
