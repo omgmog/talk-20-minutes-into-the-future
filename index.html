@@ -227,7 +227,30 @@ button.addEventListener('click',
 
 ---
 
-TODO
+``` javascript
+navigator.getUserMedia(
+  // Constraints
+  { video: true, audio: false },
+
+  // Success function
+  function (stream) {
+    var video = document.querySelector('video');
+    video.src = window.URL.createObjectURL(stream);
+    video.onloadedmetadata = function(e) {
+      // Stream loaded, do some stuff
+    };
+  },
+
+  // Error function
+  function (err) {
+    console.log(err);
+  }
+);
+```
+
+---
+
+<div class="demo getusermedia"></div>
 
 ---
 

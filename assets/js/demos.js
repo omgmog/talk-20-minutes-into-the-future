@@ -10,7 +10,7 @@
   };
 
   // set specific slide active for debug
-  // qsa('body > section:nth-child(46)')[0].classList.add('active');
+  // qsa('body > section:nth-child(41)')[0].classList.add('active');
 
   var hasClass = function (element, className) {
     do {
@@ -146,7 +146,6 @@
     cube.receiveShadow = true;
     scene.add(cube);
 
-
     var ambientLight = new T.AmbientLight(
       0x222222, 0
     );
@@ -155,18 +154,6 @@
     var lampx = -1;
     var lampy = 4;
     var lampz = -10;
-
-    var bulb = gl.build(
-      'SphereGeometry',
-      [1,20,20],
-      'MeshPhongMaterial',
-      [{
-        color: 0xffff00,
-        shading: T.FlatShading,
-      }]
-    );
-    bulb.position.set(lampx, lampy, lampz);
-    // scene.add(bulb);
 
     var dlight = new T.SpotLight( 0xffffff, 1 );
     dlight.color.setHSL( 0.1, 1, 0.95 );
@@ -185,11 +172,8 @@
     dlight.shadowCameraTop = d;
     dlight.shadowCameraBottom = -d;
 
-    // dlight.shadowCameraFar = 3500;
-    // dlight.shadowBias = -0.001;
     dlight.exponent = 1;
 
-    // dlight.shadowCameraVisible = true;
     scene.add( dlight );
 
     // Create the ground
@@ -227,7 +211,7 @@
     );
     skyMesh.position.z = -50;
     skyMesh.position.y = -30;
-    // skyMesh.material.opacity = 1;
+
     scene.add(skyMesh);
 
     // Camera...
@@ -245,7 +229,6 @@
 
     // Action!
     function render() {
-      // skyMesh.rotation.z += 0.005;
       skyMesh.position.y += 0.005;
       if (camera.position.y <= maxCamY) {
         camera.position.y += 0.02;
@@ -305,6 +288,40 @@
   };
   module.demos.rotationz = function (el) {
     renderDeviceDemo(el, 'z');
+  };
+  module.demos.getusermedia = function (el) {
+    var button = document.createElement('button');
+    var buttonLabel = document.createTextNode('DEMO TIME');
+    button.appendChild(buttonLabel);
+
+    var video = document.createElement('video');
+
+    var clickHandler = function (e) {
+      e.stopPropagation();
+      navigator.webkitGetUserMedia(
+        // Constraints
+        { video: true },
+
+        // Success function
+        function (stream) {
+          video.src = window.URL.createObjectURL(stream);
+          video.autoplay = true;
+          el.innerHTML = video.outerHTML;
+          video.onloadedmetadata = function(e) {
+            // Stream loaded, do some stuff
+          };
+        },
+
+        // Error function
+        function (err) {
+          console.log(err);
+        }
+      );
+    };
+
+    button.addEventListener('click', clickHandler, false);
+
+    el.appendChild(button);
   };
   module.demos.webaudio = function (el) {
     var button = document.createElement('button');
