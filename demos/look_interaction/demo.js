@@ -6,13 +6,16 @@ var demo = (function(window, document) {
   var renderer, scene, camera, effect, controls;
 
   var ground, ambientLight;
+  var cancelHover = [];
+  var levelPassed = false;
 
   scene = new T.Scene();
   camera = core.setCameraOptions();
+  var reticle = window.vreticle.Reticle(camera);
   if (core.isPocketDevice()) {
     camera.position.set(0, 20, 20);
   } else {
-    camera.position.set(0, 50, 50);
+    camera.position.set(0, 60, 50);
   }
   scene.add(camera);
 
@@ -123,7 +126,7 @@ var demo = (function(window, document) {
     // Build an object
     var levelObject = new T.Object3D();
     levelObject.position.y = 20;
-    levelObject.position.z = -5;
+    levelObject.position.z = -10;
     levelObject.position.x = -(((5 * iconWidth) + (2 * space)) / 2);
 
     // For each level
@@ -150,7 +153,8 @@ var demo = (function(window, document) {
               [iconWidth,iconHeight,1,1],
               'MeshLambertMaterial',
               [{
-                map: iconTexture
+                map: iconTexture,
+                color: 0xcccccc
               }]
             );
             iconObject.name = actualIcon;
@@ -169,6 +173,70 @@ var demo = (function(window, document) {
             button.position.set(0, 0, 1);
             iconObject.add(button);
             rowObject.add(iconObject);
+
+
+            iconObject.ongazeover = function () {
+              rowObject.children.forEach(function (icon) {
+                icon.material.color.setHex(0xcccccc);
+                icon.scale.set(1,1,1);
+              });
+              if (cancelHover[i+1]) {
+                clearTimeout(cancelHover[i+1]);
+              }
+              iconObject.material.color.setHex(0xffffff);
+              iconObject.scale.set(1.2, 1.2, 1.2);
+            };
+            iconObject.ongazeout = function () {
+              if (cancelHover[i+1]) {
+                clearTimeout(cancelHover[i+1]);
+              }
+              cancelHover[i+1] = setTimeout(function () {
+                iconObject.children[0].visible = false;
+                iconObject.material.color.setHex(0xcccccc);
+                iconObject.scale.set(1, 1, 1);
+              }, 250);
+            };
+            iconObject.ongazelong = function () {
+              setTimeout(function () {
+                var target = levels[currentLevel].target;
+                var current = iconObject.name;
+                var color, image;
+                var defaultImage = 'icons/instructions.png';
+                var defaultColor = 0xffffff;
+
+                var statusMaterial = levelObjects[currentLevel].children[1].children[1].material;
+                statusMaterial.visible = false;
+
+                if (current === target) {
+                  image = 'icons/correct.png';
+                  color = 0x00ff00;
+                  levelPassed = true;
+                  core.playSound('correct.mp3');
+                } else {
+                  image = 'icons/wrong.png';
+                  color = 0xff0000;
+                  core.playSound('wrong.mp3');
+                }
+
+                var texture = new T.ImageUtils.loadTexture(image);
+                texture.wrapS = texture.wrapT = T.ClampToEdgeWrapping;
+                texture.repeat.set(1,1);
+                texture.minFilter = T.LinearFilter;
+                statusMaterial.map = texture;
+                statusMaterial.color.setHex(color);
+                statusMaterial.visible = true;
+
+                setTimeout(function () {
+                  texture = new T.ImageUtils.loadTexture(defaultImage);
+                  texture.wrapS = texture.wrapT = T.ClampToEdgeWrapping;
+                  texture.repeat.set(1,1);
+                  texture.minFilter = T.LinearFilter;
+                  statusMaterial.map = texture;
+                  statusMaterial.color.setHex(defaultColor);
+                }, 1000);
+              }, 1000);
+            };
+            reticle.add_collider(iconObject);
           });
 
         // Add the row to the level board
@@ -232,48 +300,32 @@ var demo = (function(window, document) {
   });
 
 
-
-
-  var lastViewedThing = null;
-  var triggered = [];
-
-  var checkIfViewingSomething = function (items, callback1, callback2, callback3) {
-    var raycaster = new T.Raycaster();
-    raycaster.setFromCamera(core.center, camera);
-
-    var intersects = raycaster.intersectObjects(items);
-
-    if (intersects.length) {
-      var item = intersects[0].object; // the thing we've hit
-      if (item.id !== lastViewedThing) {
-        lastViewedThing = item.id;
-        if (!triggered[item.id]) {
-          callback1(item.children[0]);
-          triggered[item.id] = true;
-        }
-        setTimeout(function () {
-          if (typeof callback3 === 'function') {
-            callback3(item);
-          }
-        }, 1000);
-      }else{
-        if (triggered[item.id]) {
-          setTimeout(function () {
-            triggered[item.id] = null;
-            callback2(item);
-          }, 1000);
-        }
-      }
-
+  var backDevice = core.addBackDevice([-60, 0, 30]);
+  backDevice.ongazeover = function () {
+    if (cancelHover[0]) {
+      clearTimeout(cancelHover[0]);
     }
-
+    backDevice.children[0].material.visible = true;
+    backDevice.material.color.setHex(0x00ff00);
   };
-  var backDevice = core.addBackDevice();
+  backDevice.ongazeout = function () {
+    if (cancelHover[0]) {
+      clearTimeout(cancelHover[0]);
+    }
+    cancelHover[0] = setTimeout(function () {
+      backDevice.children[0].material.visible = false;
+      backDevice.material.color.setHex(0xff0000);
+    }, 250);
+  };
+  backDevice.ongazelong = function () {
+    setTimeout(function () {
+      window.location.href = '../menu.html';
+    }, 1000);
+  };
+  reticle.add_collider(backDevice);
   scene.add(backDevice);
 
   var currentLevel = 0;
-  var currentLevelIcons;
-  var levelPassed = false;
   var currentLevelObject = levelObjects[currentLevel];
   scene.add(currentLevelObject);
   setInterval(function () {
@@ -287,71 +339,22 @@ var demo = (function(window, document) {
     }
   }, 100);
 
-  var getCurrentLevelIcons = function (currentLevel) {
-    var currentLevelObject = levelObjects[currentLevel].children[0];
-    return [
-      currentLevelObject.children[0].children,
-      currentLevelObject.children[1].children,
-      currentLevelObject.children[2].children
-    ];
-  };
 
-
-  var highlightBackDevice = function (device){
-    device.material.visible = true;
-  };
-  var triggerBackDevice = function (){
-    window.location.href = '../menu.html';
-  };
-  var highlightIcon = function (icon) {
-    // icon.material.visible = true;
-  };
-
-  var testIfCorrectIcon = function (icon) {
-    setTimeout(function () {
-      var target = levels[currentLevel].target;
-      var current = icon.name;
-      var color, image;
-      var statusMaterial = levelObjects[currentLevel].children[1].children[1].material;
-      statusMaterial.visible = false;
-
-      if (current !== target) {
-        image = 'icons/wrong.png';
-        color = 0xff0000;
-        core.playSound('wrong.mp3');
-      } else {
-        image = 'icons/correct.png';
-        color = 0x00ff00;
-        levelPassed = true;
-        core.playSound('correct.mp3');
-      }
-      var texture = new T.ImageUtils.loadTexture(image);
-      texture.wrapS = texture.wrapT = T.ClampToEdgeWrapping;
-      texture.repeat.set(1,1);
-      texture.minFilter = T.LinearFilter;
-      statusMaterial.map = texture;
-      statusMaterial.color.setHex(color);
-      statusMaterial.visible = true;
-    }, 250);
-  };
-
-  var resetIcon = function (icon) {
-    icon.children[0].material.visible = false;
-  };
   var render = function() {
     controls.update();
 
+    reticle.reticle_loop();
     effect.render(scene, camera);
     requestAnimationFrame(render);
-    checkIfViewingSomething([backDevice], highlightBackDevice, triggerBackDevice, null);
-    currentLevelIcons = getCurrentLevelIcons(currentLevel);
-    currentLevelIcons = [].concat.apply([], currentLevelIcons);
-    checkIfViewingSomething(currentLevelIcons, highlightIcon, testIfCorrectIcon, resetIcon);
 
     // Make targetBoard look at camera
     var targetBoard = levelObjects[currentLevel].children[1];
     targetBoard.lookAt(
       new T.Vector3(camera.position.x, 0, camera.position.z)
+    );
+    var levelBoard = levelObjects[currentLevel].children[0];
+    levelBoard.lookAt(
+      new T.Vector3(camera.position.x + 10, 0, camera.position.z)
     );
 
   };
