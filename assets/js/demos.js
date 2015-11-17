@@ -22,6 +22,11 @@
     return false;
   };
 
+  var findAncestor = function (el, cls) {
+    while ((el = el.parentElement) && !el.classList.contains(cls));
+    return el;
+  }
+
   var demos;
   var module = {demos:{}};
 
@@ -101,20 +106,22 @@
     camera.lookAt(scene.position);
 
     function render () {
-      var rotMin = rotationRanges[axis][0];
-      var rotMax = rotationRanges[axis][1];
-      var newRotation = cube.rotation[axis] + (forwards ? 0.04 : -0.04 );
+      if (hasClass(findAncestor(el, 'slide'), 'active')) {
+        var rotMin = rotationRanges[axis][0];
+        var rotMax = rotationRanges[axis][1];
+        var newRotation = cube.rotation[axis] + (forwards ? 0.04 : -0.04 );
 
-      if (newRotation > rotMax) {
-        forwards = false;
-      }
-      if (newRotation < rotMin) {
-        forwards = true;
-      }
-      cube.rotation[axis] = newRotation;
+        if (newRotation > rotMax) {
+          forwards = false;
+        }
+        if (newRotation < rotMin) {
+          forwards = true;
+        }
+        cube.rotation[axis] = newRotation;
 
-      requestAnimationFrame(render);
-      renderer.render(scene, camera);
+        requestAnimationFrame(render);
+        renderer.render(scene, camera);
+      }
     }
     render();
   };
@@ -229,16 +236,18 @@
 
     // Action!
     function render() {
-      skyMesh.position.y += 0.005;
-      if (camera.position.y <= maxCamY) {
-        camera.position.y += 0.02;
-        camera.position.z += 0.02;
-        camera.lookAt(cube.position);
-        ambientLight.intensity += 0.02;
-        dlight.intensity += 0.0005;
+      if (hasClass(findAncestor(el, 'slide'), 'active')) {
+        skyMesh.position.y += 0.005;
+        if (camera.position.y <= maxCamY) {
+          camera.position.y += 0.02;
+          camera.position.z += 0.02;
+          camera.lookAt(cube.position);
+          ambientLight.intensity += 0.02;
+          dlight.intensity += 0.0005;
+        }
+        requestAnimationFrame(render);
+        renderer.render(scene, camera);
       }
-      requestAnimationFrame(render);
-      renderer.render(scene, camera);
     }
     render();
   };
@@ -308,7 +317,14 @@
           video.autoplay = true;
           el.innerHTML = video.outerHTML;
           video.onloadedmetadata = function(e) {
+            var video = this;
             // Stream loaded, do some stuff
+            var activecheck = setInterval(function () {
+              if (!hasClass(findAncestor(el, 'slide'), 'active')) {
+                stream.getVideoTracks()[0].stop();
+                clearInterval(activecheck);
+              }
+            }, 100);
           };
         },
 
@@ -412,10 +428,12 @@
 
     // Action!
     function render() {
-      cube.rotation.x += 0.04;
-      cube.rotation.y += 0.02;
-      requestAnimationFrame(render);
-      renderer.render(scene, camera);
+      if (hasClass(findAncestor(el, 'slide'), 'active')) {
+        cube.rotation.x += 0.04;
+        cube.rotation.y += 0.02;
+        requestAnimationFrame(render);
+        renderer.render(scene, camera);
+      }
     }
     render();
   };
@@ -459,10 +477,12 @@
 
     // Action!
     function render() {
-      cube.rotation.x += 0.04;
-      cube.rotation.y += 0.02;
-      requestAnimationFrame(render);
-      effect.render(scene, camera);
+      if (hasClass(findAncestor(el, 'slide'), 'active')) {
+        cube.rotation.x += 0.04;
+        cube.rotation.y += 0.02;
+        requestAnimationFrame(render);
+        effect.render(scene, camera);
+      }
     }
     render();
 
@@ -588,23 +608,25 @@
     el.appendChild(renderer.domElement);
 
     function render() {
-      var this_tick = new Date().getTime(),
-      elapsed = this_tick - last_tick;
+      if (hasClass(findAncestor(el, 'slide'), 'active')) {
+        var this_tick = new Date().getTime(),
+        elapsed = this_tick - last_tick;
 
-      camera.rotation.x += elapsed * dif_x;
-      camera.rotation.y += elapsed * dif_y;
-      camera.rotation.z += elapsed * dif_z;
+        camera.rotation.x += elapsed * dif_x;
+        camera.rotation.y += elapsed * dif_y;
+        camera.rotation.z += elapsed * dif_z;
 
-      if (this_tick - camera_tick > camera_interval) {
-        dif_x = Math.random() * speed;
-        dif_y = Math.random() * speed;
-        dif_z = Math.random() * speed;
-        camera_tick = this_tick;
+        if (this_tick - camera_tick > camera_interval) {
+          dif_x = Math.random() * speed;
+          dif_y = Math.random() * speed;
+          dif_z = Math.random() * speed;
+          camera_tick = this_tick;
+        }
+        last_tick = this_tick;
+
+        requestAnimationFrame(render);
+        renderer.render(scene, camera);
       }
-      last_tick = this_tick;
-
-      requestAnimationFrame(render);
-      renderer.render(scene, camera);
     }
     render();
 
