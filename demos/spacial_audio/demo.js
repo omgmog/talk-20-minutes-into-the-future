@@ -5,10 +5,11 @@
 
   var renderer, scene, camera, effect, controls;
 
-  var speaker, ground, ambientLight, soundIndicator;
+  var speaker, ground, ambientLight, soundIndicator, light;
 
   scene = new T.Scene();
   camera = core.setCameraOptions();
+  var reticle = window.vreticle.Reticle(camera);
   if (core.isPocketDevice()) {
     camera.position.set(0, 20, 20);
   } else {
@@ -79,44 +80,68 @@
 
 
 
-  var lastViewedThing = null;
-  var triggered = [];
-  var count;
-  var counter;
-  var counterMax = 100;
-  var checkIfViewingSomething = function (items, callback1, callback2) {
-    var raycaster = new T.Raycaster();
-    raycaster.setFromCamera(core.center, camera);
 
-    items.forEach(function (item, i) {
-      var intersects = raycaster.intersectObject(item);
 
-      if (intersects.length) {
-        if (lastViewedThing === item.id) {
-          if (count) {
-            if (counter <= counterMax) {
-              counter++;
-            } else {
-              callback2(item);
-              counter = 0;
-              count = false;
-            }
-          }
-        } else {
-          lastViewedThing = item.id;
-          triggered[i] = true;
-          count = true;
-          counter = 0;
-          callback1(item.children[0]);
-        }
-      }
-    });
+
+  var lampx = 20;
+  var lampy = 30;
+  var lampz = -20;
+
+
+  light = new T.DirectionalLight(0xffffff, 1);
+  light.color.setHSL(0.1, 1, 0.95);
+  light.position.set(lampx, lampy, lampz);
+  light.position.multiplyScalar(40);
+  light.castShadow = true;
+
+  // Increase size for sharper shadows
+  light.shadowMapWidth = 1024;
+  light.shadowMapHeight = 1024;
+
+  var d = 256;
+
+  light.shadowCameraLeft = -d;
+  light.shadowCameraRight = d;
+  light.shadowCameraTop = d;
+  light.shadowCameraBottom = -d;
+
+  light.shadowCameraFar = 3500;
+  light.shadowBias = -0.0001;
+
+  // light.shadowCameraVisible = true;
+  scene.add(light);
+
+
+  var cancelHover = [];
+  var backDevice = core.addBackDevice([-60, 0, -30]);
+  backDevice.ongazeover = function () {
+    if (cancelHover[0]) {
+      clearTimeout(cancelHover[0]);
+    }
+    backDevice.children[0].material.visible = true;
+    backDevice.material.color.setHex(0x00ff00);
   };
-  var backDevice = core.addBackDevice();
+  backDevice.ongazeout = function () {
+    if (cancelHover[0]) {
+      clearTimeout(cancelHover[0]);
+    }
+    cancelHover[0] = setTimeout(function () {
+      backDevice.children[0].material.visible = false;
+      backDevice.material.color.setHex(0xff0000);
+    }, 250);
+  };
+  backDevice.ongazelong = function () {
+    setTimeout(function () {
+      window.location.href = '../menu.html';
+    }, 1000);
+  };
+  reticle.add_collider(backDevice);
+
   scene.add(backDevice);
 
   var playDevice = core.build('CubeGeometry', [30, 15, 10], 'MeshLambertMaterial', [{map: woodTexture}]);
   playDevice.position.set(35, 0, -20);
+  playDevice.castShadow = true;
 
 
   var buttonMaterials, buttonMaterialsArray = [];
@@ -138,7 +163,7 @@
   );
   playButton.position.z = 5;
   playDevice.add(playButton);
-  playDevice.lookAt(new T.Vector3(0,5,0));
+  playDevice.lookAt(new T.Vector3(0,5,10));
   scene.add(playDevice);
 
 
@@ -169,21 +194,13 @@
       sound.stop();
       isPlaying = false;
     }
-    setTimeout(function () {
-      lastViewedThing = null;
-    }, 1000);
   };
 
-  var dummyCallBack = function () {
+  playButton.ongazelong = function () {
+    triggerPlayToggle();
+  };
+  reticle.add_collider(playButton);
 
-  };
-
-  var highlightBackDevice = function (device){
-    device.material.visible = true;
-  };
-  var triggerBackDevice = function (){
-    window.location.href = '../menu.html';
-  };
   soundIndicator = core.build('SphereGeometry', [1, 32, 32], 'MeshPhongMaterial', [{color:0xff0000}]);
   var updateSoundPosition = function () {
 
@@ -199,8 +216,7 @@
 
     effect.render(scene, camera);
     requestAnimationFrame(render);
-    checkIfViewingSomething([backDevice], highlightBackDevice, triggerBackDevice);
-    checkIfViewingSomething([playDevice], triggerPlayToggle, triggerPlayToggle);
+    reticle.reticle_loop();
     updateSoundPosition();
   };
   render();
