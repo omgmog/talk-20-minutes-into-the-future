@@ -71,6 +71,8 @@ var core = (function (window) {
   var center = new T.Vector3(0,0,0);
 
   var addBackDevice = function () {
+    var args = (arguments.length?arguments[0]:[0, 4, 40, 0, 0 , 0]);
+
     var texture = new T.ImageUtils.loadTexture('../' + core.options.assetsPath + 'backButton.png');
     texture.wrapS = texture.wrapT = T.ClampToEdgeWrapping;
     texture.repeat.set(1,1);
@@ -82,12 +84,20 @@ var core = (function (window) {
       [{
         color: 0xff0000,
         map: texture,
+        side: T.DoubleSide
       }]
     );
     device.name = 'device';
-    device.position.set(0, 4, 60);
-    device.rotation.x = (Math.PI * 2) / 2;
-    device.rotation.z = (Math.PI * 2) / 2;
+    device.position.x = args[0];
+    device.position.y = args[1];
+    device.position.z = args[2];
+    if (args.length > 3) {
+      // we must have some rots too..
+      device.rotation.x = args[3];
+      device.rotation.y = args[4];
+      device.rotation.z = args[5];
+    }
+    device.lookAt(new T.Vector3(0,0,20));
 
     // Add a button child here
 
@@ -96,7 +106,7 @@ var core = (function (window) {
       [10.2, 32],
       'LineBasicMaterial',
       [{
-        color: 0xffff00
+        color: 0x00ff00
       }]
     );
     button.name = 'button';
@@ -113,9 +123,9 @@ var core = (function (window) {
   var offset = 250;
   var last, deferTimer;
   var playSound = function (file) {
-    var now = new Date;
+    var now = new Date();
 
-    var sound = new Howl({
+    var sound = new window.Howl({
       urls: [file],
       onend: function() {
         playing = false;
