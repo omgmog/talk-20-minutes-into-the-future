@@ -9,6 +9,7 @@ var demo = (function(window, document) {
 
   scene = new T.Scene();
   camera = core.setCameraOptions();
+  var reticle = window.vreticle.Reticle(camera);
   if (core.isPocketDevice()) {
     camera.position.set(0, 20, 20);
   } else {
@@ -102,66 +103,45 @@ var demo = (function(window, document) {
   // light.shadowCameraVisible = true;
   scene.add(light);
 
-
-  var lastViewedThing = null;
-  var triggered = [];
-  var count;
-  var counter;
-  var counterMax = 100;
-
-  var checkIfViewingSomething = function (items, callback1, callback2) {
-    var raycaster = new T.Raycaster();
-    raycaster.setFromCamera(core.center, camera);
-
-    items.forEach(function (item, i) {
-      var intersects = raycaster.intersectObject(item);
-
-      if (intersects.length) {
-        if (lastViewedThing === item.viewid) {
-          if (count) {
-            if (counter <= counterMax) {
-              counter++;
-            } else {
-              callback2(item);
-              counter = 0;
-              count = false;
-            }
-          }
-        } else {
-          lastViewedThing = item.viewid;
-          triggered[i] = false;
-          count = false;
-          if (!triggered[i]) {
-            count = true;
-            counter = 0;
-            callback1(item.children[0]);
-            triggered[i] = true;
-          }
-        }
-      }
-    });
-  };
+  var cancelHover = [];
   var backDevice = core.addBackDevice();
+  backDevice.ongazeover = function () {
+    if (cancelHover[0]) {
+      clearTimeout(cancelHover[0]);
+    }
+    backDevice.children[0].material.visible = true;
+    backDevice.material.color.setHex(0x00ff00);
+  };
+  backDevice.ongazeout = function () {
+    if (cancelHover[0]) {
+      clearTimeout(cancelHover[0]);
+    }
+    cancelHover[0] = setTimeout(function () {
+      backDevice.children[0].material.visible = false;
+      backDevice.material.color.setHex(0xff0000);
+    }, 250);
+  };
+  backDevice.ongazelong = function () {
+    setTimeout(function () {
+      window.location.href = '../menu.html';
+    }, 1000);
+  };
+  reticle.add_collider(backDevice);
+
   scene.add(backDevice);
 
-  var highlightBackDevice = function (device){
-    device.material.visible = true;
-  };
-  var triggerBackDevice = function (){
-    window.location.href = '../menu.html';
-  };
 
-  var render = function() {
+  var animateRenderer = function() {
     cube.rotation.x += 0.04;
     cube.rotation.y += 0.02;
 
     controls.update();
 
+    reticle.reticle_loop();
     effect.render(scene, camera);
-    requestAnimationFrame(render);
-    checkIfViewingSomething([backDevice], highlightBackDevice, triggerBackDevice);
+    requestAnimationFrame(animateRenderer);
   };
-  render();
+  animateRenderer();
   window.addEventListener('resize', function() {
     core.resizeRenderer(renderer, scene, camera, effect);
   }, false);
