@@ -1,4 +1,4 @@
-var demo = (function(window, document) {
+(function(window, document) {
   'use strict';
   var core = window.core;
   var T = window.THREE;
@@ -144,7 +144,7 @@ var demo = (function(window, document) {
 
 
   var file = 'music.mp3';
-  var sound = new Howl({
+  var sound = new window.Howl({
     urls: [file]
   });
 
@@ -162,7 +162,7 @@ var demo = (function(window, document) {
           speaker.scale.set(1, 1, 1);
           speaker.position.y = 10;
         }, 100);
-      }, 200)
+      }, 200);
     } else {
       clearInterval(scaleSpeaker);
       playButton.material.materials[4].color.setHex(0xff0000);

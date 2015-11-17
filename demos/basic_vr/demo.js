@@ -1,4 +1,4 @@
-var demo = (function(window, document) {
+(function(window, document) {
   'use strict';
   var core = window.core;
   var T = window.THREE;

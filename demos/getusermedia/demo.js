@@ -1,4 +1,4 @@
-var demo = (function(window, document) {
+(function(window, document) {
   'use strict';
   var core = window.core;
   var T = window.THREE;
@@ -153,16 +153,14 @@ var demo = (function(window, document) {
         }]
       },
       function (stream) {
-        console.log('Started the stream', stream);
-
         videoMonitor.src = window.URL.createObjectURL(stream);
 
-        videoMonitor.onloadedmetadata = function (e) {
+        videoMonitor.onloadedmetadata = function () {
           videoMonitor.play();
         };
       },
-      function (error) {
-        console.log(error);
+      function () {
+        // shhhh
       }
     );
   };
@@ -228,7 +226,6 @@ var demo = (function(window, document) {
       button.ongazelong = function () {
         setTimeout(function () {
           startVideo(sources[i].id);
-          console.log(source.label);
           button.material.color.setHex(0xffff00);
         }, 1000);
       };
