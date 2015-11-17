@@ -2,7 +2,7 @@
   'use strict';
 
   var T = window.THREE;
-  var urlbase = '/demos/';
+  var urlbase = '/';
 
   if (core.isPocketDevice()) {
     document.body.classList.add('throwable');
