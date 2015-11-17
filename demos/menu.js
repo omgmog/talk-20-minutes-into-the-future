@@ -133,11 +133,6 @@
 
   };
 
-  var launchDemo = function (thing) {
-    setTimeout(function () {
-      core.construct(thing.callback, null);
-    }, 250);
-  };
   var cardCancelHovers = [];
   var createDemoCards = function () {
     data.forEach(function (item) {
@@ -162,7 +157,6 @@
       // Extra info
 
       card.callback = function () {
-        window.location.href = urlbase + item.name;
       };
       card.ongazeout = function () {
         stopLookingatCard(card);
@@ -174,7 +168,7 @@
         showLoadingIndicator(card);
 
         setTimeout(function () {
-          launchDemo(card);
+          window.location.href = urlbase + item.name;
         }, 1000);
       };
       reticle.add_collider(card);
