@@ -301,7 +301,7 @@ var demo = (function(window, document) {
     device.material.visible = true;
   };
   var triggerBackDevice = function (){
-    history.back();
+    window.location.href = '../menu.html';
   };
   var highlightIcon = function (icon) {
     // icon.material.visible = true;

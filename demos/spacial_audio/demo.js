@@ -182,7 +182,7 @@ var demo = (function(window, document) {
     device.material.visible = true;
   };
   var triggerBackDevice = function (){
-    history.back();
+    window.location.href = '../menu.html';
   };
   soundIndicator = core.build('SphereGeometry', [1, 32, 32], 'MeshPhongMaterial', [{color:0xff0000}]);
   var updateSoundPosition = function () {
