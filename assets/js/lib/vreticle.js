@@ -48,6 +48,7 @@ vreticle.Reticle = function(camera) {
             var default_geometry = new THREE.BoxGeometry(side_length, side_length, side_length);
         }
         var default_object = new THREE.Mesh(default_geometry, temp_material);
+        default_object.visible = false;
         default_object.position.x = position_in.x;
         default_object.position.y = position_in.y;
         default_object.position.z = position_in.z;
@@ -76,23 +77,24 @@ vreticle.Reticle = function(camera) {
         this.reticle_object = this.create_default_object(new THREE.Vector3(0, 0, -.5), true, .01, undefined, true);
         this.reticle_object.material.transparent = true;
         this.reticle_object.material.opacity = 0.5;
+        this.reticle_object.visible = false;
         this.reticle_arm_object.add(this.reticle_object);
         this.camera.add(this.reticle_arm_object);
 
 
-        new_reticle.reticle_text_sprite = new_reticle.makeTextSprite(" World! ", {
-            fontsize: 32,
-            fontface: "Georgia",
-            borderColor: {
-                r: 0,
-                g: 0,
-                b: 255,
-                a: 1.0
-            }
-        });
+        // new_reticle.reticle_text_sprite = new_reticle.makeTextSprite(" World! ", {
+        //     fontsize: 32,
+        //     fontface: "Georgia",
+        //     borderColor: {
+        //         r: 0,
+        //         g: 0,
+        //         b: 255,
+        //         a: 1.0
+        //     }
+        // });
 
 
-        this.reticle_text_sprite.position.setZ(-.5).setY(-.15).setX(.25);
+        // this.reticle_text_sprite.position.setZ(-.5).setY(-.15).setX(.25);
     }
 
     new_reticle.show_text_sprite = function() {
@@ -214,117 +216,117 @@ vreticle.Reticle = function(camera) {
         this.clock = new THREE.Clock(true);
     }
 
-    new_reticle.makeTextSprite = function(message, parameters) {
-        var get_sprite_text_material = function(message) {
-            if (parameters === undefined) parameters = {};
+    // new_reticle.makeTextSprite = function(message, parameters) {
+    //     var get_sprite_text_material = function(message) {
+    //         if (parameters === undefined) parameters = {};
 
-            var fontface = parameters.hasOwnProperty("fontface") ?
-                parameters["fontface"] : "Arial";
+    //         var fontface = parameters.hasOwnProperty("fontface") ?
+    //             parameters["fontface"] : "Arial";
 
-            var fontsize = parameters.hasOwnProperty("fontsize") ?
-                parameters["fontsize"] : 18;
+    //         var fontsize = parameters.hasOwnProperty("fontsize") ?
+    //             parameters["fontsize"] : 18;
 
-            var borderThickness = parameters.hasOwnProperty("borderThickness") ?
-                parameters["borderThickness"] : 4;
+    //         var borderThickness = parameters.hasOwnProperty("borderThickness") ?
+    //             parameters["borderThickness"] : 4;
 
-            var borderColor = parameters.hasOwnProperty("borderColor") ?
-                parameters["borderColor"] : {
-                    r: 0,
-                    g: 0,
-                    b: 0,
-                    a: 1.0
-                };
+    //         var borderColor = parameters.hasOwnProperty("borderColor") ?
+    //             parameters["borderColor"] : {
+    //                 r: 0,
+    //                 g: 0,
+    //                 b: 0,
+    //                 a: 1.0
+    //             };
 
-            var backgroundColor = parameters.hasOwnProperty("backgroundColor") ?
-                parameters["backgroundColor"] : {
-                    r: 255,
-                    g: 255,
-                    b: 255,
-                    a: 1.0
-                };
+    //         var backgroundColor = parameters.hasOwnProperty("backgroundColor") ?
+    //             parameters["backgroundColor"] : {
+    //                 r: 255,
+    //                 g: 255,
+    //                 b: 255,
+    //                 a: 1.0
+    //             };
 
-            var spriteAlignment = 1;
+    //         var spriteAlignment = 1;
 
-            var canvas = document.createElement('canvas');
-            var context = canvas.getContext('2d');
-            context.font = "Bold " + fontsize + "px " + fontface;
+    //         var canvas = document.createElement('canvas');
+    //         var context = canvas.getContext('2d');
+    //         context.font = "Bold " + fontsize + "px " + fontface;
 
-            // get size data (height depends only on font size)
-            var metrics = context.measureText(message);
-            var textWidth = metrics.width;
+    //         // get size data (height depends only on font size)
+    //         var metrics = context.measureText(message);
+    //         var textWidth = metrics.width;
 
-            // background color
-            context.fillStyle = "rgba(" + backgroundColor.r + "," + backgroundColor.g + "," + backgroundColor.b + "," + backgroundColor.a + ")";
-            // border color
-            context.strokeStyle = "rgba(" + borderColor.r + "," + borderColor.g + "," + borderColor.b + "," + borderColor.a + ")";
+    //         // background color
+    //         context.fillStyle = "rgba(" + backgroundColor.r + "," + backgroundColor.g + "," + backgroundColor.b + "," + backgroundColor.a + ")";
+    //         // border color
+    //         context.strokeStyle = "rgba(" + borderColor.r + "," + borderColor.g + "," + borderColor.b + "," + borderColor.a + ")";
 
-            context.lineWidth = borderThickness;
-            new_reticle.roundRect(context, borderThickness / 2, borderThickness / 2, textWidth + borderThickness, fontsize * 1.4 + borderThickness, 6);
-            // 1.4 is extra height factor for text below baseline: g,j,p,q.
+    //         context.lineWidth = borderThickness;
+    //         new_reticle.roundRect(context, borderThickness / 2, borderThickness / 2, textWidth + borderThickness, fontsize * 1.4 + borderThickness, 6);
+    //         // 1.4 is extra height factor for text below baseline: g,j,p,q.
 
-            // text color
-            context.fillStyle = "rgba(0, 0, 0, 1.0)";
+    //         // text color
+    //         context.fillStyle = "rgba(0, 0, 0, 1.0)";
 
-            context.fillText(message, borderThickness, fontsize + borderThickness);
+    //         context.fillText(message, borderThickness, fontsize + borderThickness);
 
-            // canvas contents will be used for a texture
-            var texture = new THREE.Texture(canvas)
-            texture.needsUpdate = true;
+    //         // canvas contents will be used for a texture
+    //         var texture = new THREE.Texture(canvas)
+    //         texture.needsUpdate = true;
 
-            var spriteMaterial = new THREE.SpriteMaterial({
-                map: texture,
-                // useScreenCoordinates: false,
-                // alignment: spriteAlignment
-            });
+    //         var spriteMaterial = new THREE.SpriteMaterial({
+    //             map: texture,
+    //             // useScreenCoordinates: false,
+    //             // alignment: spriteAlignment
+    //         });
 
-            return spriteMaterial;
-        }
+    //         return spriteMaterial;
+    //     }
 
-        var set_text = function(message) {
-            this.material = this.get_sprite_text_material(message);
-        }
+    //     var set_text = function(message) {
+    //         this.material = this.get_sprite_text_material(message);
+    //     }
 
-        var blitz_text = function(message) {
-            new_reticle.reticle_text_sprite.clear_blitz();
-            new_reticle.show_text_sprite();
-            new_reticle.reticle_text_sprite.tokenized_message = message.replace(/(<([^>]+)>)/ig, "").split(" ");
-
-
-            new_reticle.reticle_text_sprite.counter = 1;
-            new_reticle.reticle_text_sprite.myMethod = function() {
-                if (new_reticle.reticle_text_sprite.tokenized_message[new_reticle.reticle_text_sprite.counter] != undefined) {
-                    //new_sprite.position.set(55,105,55);
-                    new_reticle.reticle_text_sprite.set_text(new_reticle.reticle_text_sprite.tokenized_message[new_reticle.reticle_text_sprite.counter]);
-                    new_reticle.reticle_text_sprite.counter += 1;
-                } else {
-                    new_reticle.reticle_text_sprite.clear_blitz();
-                }
-            }
-
-            //this.myMethod();
-            new_reticle.reticle_text_sprite.refreshIntervalId = setInterval(new_reticle.reticle_text_sprite.myMethod, 100);
-        }
-
-        var clear_blitz = function() {
-            clearInterval(new_reticle.reticle_text_sprite.refreshIntervalId);
-            new_reticle.hide_text_sprite();
-        }
-
-        var sprite = new THREE.Sprite(get_sprite_text_material(message));
-        sprite.scale.set(1, .5, 1.0);
-
-        //prep sprite as refreshable
-        sprite.style_parameters = parameters;
-        sprite.get_sprite_text_material = get_sprite_text_material;
-        sprite.set_text = set_text;
-        sprite.blitz_text = blitz_text;
-        sprite.clear_blitz = clear_blitz;
-        //sprite.context = context;
+    //     var blitz_text = function(message) {
+    //         new_reticle.reticle_text_sprite.clear_blitz();
+    //         new_reticle.show_text_sprite();
+    //         new_reticle.reticle_text_sprite.tokenized_message = message.replace(/(<([^>]+)>)/ig, "").split(" ");
 
 
+    //         new_reticle.reticle_text_sprite.counter = 1;
+    //         new_reticle.reticle_text_sprite.myMethod = function() {
+    //             if (new_reticle.reticle_text_sprite.tokenized_message[new_reticle.reticle_text_sprite.counter] != undefined) {
+    //                 //new_sprite.position.set(55,105,55);
+    //                 new_reticle.reticle_text_sprite.set_text(new_reticle.reticle_text_sprite.tokenized_message[new_reticle.reticle_text_sprite.counter]);
+    //                 new_reticle.reticle_text_sprite.counter += 1;
+    //             } else {
+    //                 new_reticle.reticle_text_sprite.clear_blitz();
+    //             }
+    //         }
 
-        return sprite;
-    }
+    //         //this.myMethod();
+    //         new_reticle.reticle_text_sprite.refreshIntervalId = setInterval(new_reticle.reticle_text_sprite.myMethod, 100);
+    //     }
+
+    //     var clear_blitz = function() {
+    //         clearInterval(new_reticle.reticle_text_sprite.refreshIntervalId);
+    //         new_reticle.hide_text_sprite();
+    //     }
+
+    //     var sprite = new THREE.Sprite(get_sprite_text_material(message));
+    //     sprite.scale.set(1, .5, 1.0);
+
+    //     //prep sprite as refreshable
+    //     sprite.style_parameters = parameters;
+    //     sprite.get_sprite_text_material = get_sprite_text_material;
+    //     sprite.set_text = set_text;
+    //     sprite.blitz_text = blitz_text;
+    //     sprite.clear_blitz = clear_blitz;
+    //     //sprite.context = context;
+
+
+
+    //     return sprite;
+    // }
 
     // function for drawing rounded rectangles
     new_reticle.roundRect = function(ctx, x, y, w, h, r) {
