@@ -23,6 +23,7 @@
   effect.setSize(core.options.width, core.options.height);
   var scene = new T.Scene();
   var camera = core.setCameraOptions();
+  var reticle = window.vreticle.Reticle(camera);
   if (core.isPocketDevice()) {
     camera.position.y = 4;
   } else {
@@ -30,7 +31,6 @@
   }
   var controls = core.setControllerMethod(camera, renderer.domElement);
   var cards = [];
-  var buttons = [];
   var assetsPath = core.options.assetsPath;
 
   var rad = 15;
@@ -41,7 +41,7 @@
     {
       title: 'Basic VR',
       image: 'image1.png',
-      id: 'basic_vr',
+      name: 'basic_vr',
       position: {
         x: posx(180),
         z: posz(180)
@@ -50,7 +50,7 @@
     {
       title: 'Look Interaction',
       image: 'image2.png',
-      id: 'look_interaction',
+      name: 'look_interaction',
       position: {
         x: posx(100),
         z: posz(100),
@@ -59,7 +59,7 @@
     {
       title: 'Using getUserMedia',
       image: 'image4.png',
-      id: 'getusermedia',
+      name: 'getusermedia',
       position: {
         x: posx(20),
         z: posz(20),
@@ -68,7 +68,7 @@
     {
       title: 'Spacial Audio',
       image: 'image5.png',
-      id: 'spacial_audio',
+      name: 'spacial_audio',
       position: {
         x: posx(-60),
         z: posz(-60),
@@ -80,31 +80,67 @@
     var material = core.construct(T.MeshLambertMaterial, materialOptions);
     return new T.Mesh(geometry, material);
   };
+  var stopLookingatCard = function (card) {
+      if ((card.children).length) {
+        card.children[0].visible = false;
+      }
+      if (cardCancelHovers[card.name]) {
+        clearTimeout(cardCancelHovers[card.name]);
+      }
+      cardCancelHovers[card.name] = setTimeout(function () {
+        // We do this to stop the hover flickering
+        card.scale.set(1, 1, 1);
+        card.lookAt(core.center);
+      }, 250);
+  };
   var handleCardLook = function (card) {
-    var button;
+    if (cardCancelHovers[card.name]) {
+      clearTimeout(cardCancelHovers[card.name]);
+    }
     // Greedily reset other cards
     cards.forEach(function (card) {
-      card.scale.set(1, 1, 1);
-      card.lookAt(core.center);
-      button = card.children[0];
+        card.scale.set(1, 1, 1);
+        card.lookAt(core.center);
     });
 
     // Make this card prominent
     var scale = 1.4;
     card.scale.set(scale, scale, 1);
     card.lookAt(new T.Vector3(0,1,0));
-    button = card.children[0];
+  };
+
+  var _loader;
+
+  var showLoadingIndicator = function (card) {
+    var loader;
+    // do some gif magic here
+    if (!(card.children).length) {
+      var loaderTexture = new T.ImageUtils.loadTexture('assets/launchButton.png');
+      var loaderMaterial = new T.MeshBasicMaterial({
+        map: loaderTexture,
+        side:T.DoubleSide,
+        color: 0x00ff00
+      });
+      var loaderGeometry = new T.PlaneBufferGeometry(4, 2, 1, 1);
+
+      loader = new T.Mesh(loaderGeometry, loaderMaterial);
+      loader.position.z = 3;
+      card.add(loader);
+    } else {
+      loader = card.children[0];
+    }
+    loader.visible = true;
+
   };
 
   var launchDemo = function (thing) {
-    thing.visible = true;
     setTimeout(function () {
       core.construct(thing.callback, null);
     }, 250);
   };
-
+  var cardCancelHovers = [];
   var createDemoCards = function () {
-    data.forEach(function (item, i) {
+    data.forEach(function (item) {
       var texture;
       if (item.image) {
         texture = new T.ImageUtils.loadTexture(assetsPath + item.image);
@@ -121,33 +157,27 @@
       card.position.x = item.position.x;
       card.position.z = item.position.z;
       card.lookAt(core.center);
+      card.name = item.name;
 
       // Extra info
-      card.name = item.id;
-      card.viewid = 'card-' + i;
 
-      var buttonTexture = new T.ImageUtils.loadTexture(assetsPath + 'launchButton.png');
-      buttonTexture.wrapS = buttonTexture.wrapT = T.ClampToEdgeWrapping;
-      buttonTexture.repeat.set(1,1);
-      buttonTexture.minFilter = T.LinearFilter;
-
-      var button = createPlane(
-        [2, 1, 1, 1],
-        [{
-          color: 0xff0000,
-          map: buttonTexture,
-        }]
-      );
-
-      button.position.set(0, 0, 1);
-      button.name = item.id + '_button';
-      button.viewid = 'button-' + i;
-      button.visible = false;
-      button.callback = function () {
-        window.location.href = urlbase + card.name;
+      card.callback = function () {
+        window.location.href = urlbase + item.name;
       };
-      buttons.push(button);
-      card.add(button);
+      card.ongazeout = function () {
+        stopLookingatCard(card);
+      };
+      card.ongazeover = function () {
+        handleCardLook(card);
+      };
+      card.ongazelong = function () {
+        showLoadingIndicator(card);
+
+        setTimeout(function () {
+          launchDemo(card);
+        }, 1000);
+      };
+      reticle.add_collider(card);
 
       cards.push(card);
       scene.add(card);
@@ -175,46 +205,6 @@
     scene.add(spotlight);
   };
 
-
-  var lastViewedThing = null;
-  var triggered = [];
-  var count;
-  var counter;
-  var counterMax = 100;
-
-  var checkIfViewingSomething = function (items, callback1, callback2) {
-    var raycaster = new T.Raycaster();
-    raycaster.setFromCamera(core.center, camera);
-
-    items.forEach(function (item, i) {
-      var intersects = raycaster.intersectObject(item);
-
-      if (intersects.length) {
-        if (lastViewedThing === item.viewid) {
-          if (count) {
-            if (counter <= counterMax) {
-              counter++;
-            } else {
-              callback2(item.children[0]);
-              counter = 0;
-              count = false;
-            }
-          }
-        } else {
-          lastViewedThing = item.viewid;
-          triggered[i] = false;
-          count = false;
-          if (!triggered[i]) {
-            count = true;
-            counter = 0;
-            callback1(item);
-            triggered[i] = true;
-          }
-        }
-      }
-    });
-  };
-
   var buildScene = function () {
     createGround();
     createDemoCards();
@@ -227,8 +217,8 @@
   var animateRenderer = function () {
     effect.render(scene, camera);
     controls.update();
+    reticle.reticle_loop();
     requestAnimationFrame(animateRenderer);
-    checkIfViewingSomething(cards, handleCardLook, launchDemo);
   };
 
   var init = function () {

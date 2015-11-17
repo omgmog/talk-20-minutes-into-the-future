@@ -50,22 +50,6 @@ var core = (function (window) {
   var setCameraOptions = function () {
     var camera;
     camera = new T.PerspectiveCamera(core.options.fov, core.options.aspect, core.options.near, core.options.far);
-
-
-    var circle = build(
-      'CircleGeometry',
-      [0.1, 32],
-      'MeshBasicMaterial',
-      [{
-        color: 0xff0000,
-        transparent: true,
-        opacity: 0.5
-      }]
-    );
-    circle.position.z = -10;
-
-    camera.add(circle);
-
     return camera;
   };
 
