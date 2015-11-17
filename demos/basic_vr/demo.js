@@ -104,7 +104,7 @@ var demo = (function(window, document) {
   scene.add(light);
 
   var cancelHover = [];
-  var backDevice = core.addBackDevice();
+  var backDevice = core.addBackDevice([-60, 0, -30]);
   backDevice.ongazeover = function () {
     if (cancelHover[0]) {
       clearTimeout(cancelHover[0]);
