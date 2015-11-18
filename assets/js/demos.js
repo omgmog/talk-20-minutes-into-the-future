@@ -339,7 +339,34 @@
 
     el.appendChild(button);
   };
-  module.demos.webaudio = function (el) {
+  module.demos.webaudio1 = function (el) {
+    var button = document.createElement('button');
+    var buttonLabel = document.createTextNode('DEMO TIME');
+    button.appendChild(buttonLabel);
+
+        // Set up the audio context
+    var context = new AudioContext();
+    // Create an oscillator
+    var oscillator = context.createOscillator();
+    var playing = false;
+    var clickHandler = function (e) {
+      e.stopPropagation();
+      if (!playing) {
+        oscillator.connect(context.destination);
+        oscillator.start(0);
+        playing = true;
+      } else {
+        oscillator.stop(0);
+        oscillator.disconnect();
+        button.removeEventListener('click', clickHandler, false);
+        button.innerText = 'Moving on...';
+      }
+    };
+    button.addEventListener('click', clickHandler, false);
+
+    el.appendChild(button);
+  };
+  module.demos.webaudio2 = function (el) {
     var button = document.createElement('button');
     var buttonLabel = document.createTextNode('DEMO TIME');
     button.appendChild(buttonLabel);
