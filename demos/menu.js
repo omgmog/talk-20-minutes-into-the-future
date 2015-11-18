@@ -2,7 +2,7 @@
   'use strict';
 
   var T = window.THREE;
-  var urlbase = '/';
+  var urlbase = 'https://jscard.xyz/';
 
   if (core.isPocketDevice()) {
     document.body.classList.add('throwable');
