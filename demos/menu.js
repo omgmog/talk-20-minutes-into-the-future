@@ -2,11 +2,17 @@
   'use strict';
 
   var T = window.THREE;
-  var urlbase = 'https://jscard.xyz/';
 
   if (core.isPocketDevice()) {
     document.body.classList.add('throwable');
   }
+
+  var tpl = function(template, data) {
+  for (var part in data) {
+    template = template.replace(new RegExp('{' + part + '}', 'g'), data[part]);
+  }
+  return template;
+};
 
   var renderer = new T.WebGLRenderer({
     alpha: true,
@@ -168,7 +174,9 @@
         showLoadingIndicator(card);
 
         setTimeout(function () {
-          window.location.href = urlbase + item.name;
+          window.location = tpl('https://jscard.xyz/{demo}/', {
+            demo: card.name
+          });
         }, 1000);
       };
       reticle.add_collider(card);
