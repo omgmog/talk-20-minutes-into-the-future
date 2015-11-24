@@ -104,6 +104,10 @@
   <script>
     'use strict';
     var isPocketDevice = function () {
+      if (userAgent.match(/iPhone/i)) {
+        // Safari iOS can't do fullscreen, so this check needs to return false
+        return false;
+      }
       // Assuming this is only available on mobile
       return (typeof window.orientation !== 'undefined');
     };
