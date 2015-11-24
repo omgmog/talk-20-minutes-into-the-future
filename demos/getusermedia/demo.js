@@ -2,6 +2,8 @@
   'use strict';
   var core = window.core;
   var T = window.THREE;
+  navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+
 
   var renderer, scene, camera, effect, controls, light;
 
@@ -145,7 +147,7 @@
     });
   }
   var startVideo = function (sourceId) {
-    navigator.webkitGetUserMedia(
+    navigator.getUserMedia(
       {
         video: true,
         optiona: [{
